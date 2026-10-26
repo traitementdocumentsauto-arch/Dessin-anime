@@ -10,7 +10,7 @@ Application web pour enfant (téléphone ou tablette, Android ou iPhone) :
 4. **Regarder le dessin animé** : le décor colorié ondule sous l'eau, le poisson et la pieuvre découpés dans le dessin nagent, parlent et dansent.
 5. **Garder** ses dessins animés : ils restent sur l'appareil (rien n'est envoyé sur Internet).
 
-**Feuilles à colorier** (bouton « 🖨️ Feuilles à colorier ») : un catalogue de 30 feuilles, rangées par familles. **Monstres de poche** inventés (dans l'esprit des Pokémon, sans reprendre les vrais, protégés) : Pyroto (feu), Aquabulle (eau), Feuillon (plante), Voltéo (électrique), Givrou (glace), Fantomou (fantôme), Drakéo (dragon), Rocaille (roche), Plumio (vol), Psylou (psy), Lapaillette (fée), Sablox (sol) ; chacun crie son attaque dans le film. Puis 18 autres feuilles (`js/catalogue.js`, page d'impression `feuille.html`, une feuille ou « tout imprimer ») : poisson, raie, requin, dauphin, baleine, pieuvre, tortue, dinosaure, dragon, chat, chien, lapin, oiseau, papillon, fusée, voiture, robot, monstre, plus la page « Au fond de la mer ». Chaque feuille montre un grand personnage en traits épais, tourné vers la gauche. Le bouton 📷 sous une feuille ouvre l'appareil photo et l'application sait déjà ce que c'est (sujet et nom remplis).
+**Feuilles à colorier** (bouton « 🖨️ Feuilles à colorier ») : un catalogue de 54 feuilles, rangées par familles. **Monstres de poche** inventés (dans l'esprit des Pokémon, sans reprendre les vrais, protégés) : Pyroto (feu), Aquabulle (eau), Feuillon (plante), Voltéo (électrique), Givrou (glace), Fantomou (fantôme), Drakéo (dragon), Rocaille (roche), Plumio (vol), Psylou (psy), Lapaillette (fée), Sablox (sol) ; chacun a **deux évolutions** (36 monstres, par exemple Pyroto → Pyrenard → Pyroloup), et crie son attaque dans le film avec un **effet d'attaque** de son type (`js/attaques.js` : flammes, jets d'eau, feuilles, éclairs, cristaux de glace, fantômes, souffle du dragon, pluie de cailloux, tornade, ondes psy, étoiles, poussière, écran qui tremble). Un Pokémon dessiné par l'enfant (sujet « Pokémon ») reçoit un type au choix (ou au hasard) et son effet. Puis 18 autres feuilles (`js/catalogue.js`, page d'impression `feuille.html`, une feuille ou « tout imprimer ») : poisson, raie, requin, dauphin, baleine, pieuvre, tortue, dinosaure, dragon, chat, chien, lapin, oiseau, papillon, fusée, voiture, robot, monstre, plus la page « Au fond de la mer ». Chaque feuille montre un grand personnage en traits épais, tourné vers la gauche. Le bouton 📷 sous une feuille ouvre l'appareil photo et l'application sait déjà ce que c'est (sujet et nom remplis).
 
 **N'importe quel dessin** (« Photo de mon dessin ») : sans page spéciale, l'application découpe le dessin sur la photo (tout ce qui n'est pas le papier, en tenant compte d'une lumière jaune ou d'une ombre), on le tourne pour qu'il regarde vers la gauche, puis on **choisit son film** (ou « Surprise ! ») :
 
@@ -44,6 +44,8 @@ Les boutons photo ouvrent directement l'appareil photo (`capture`) ; « Choisir 
 - `js/anim.js` : le dessin animé et les sons (fabriqués sur place).
 - `js/libre.js` : « n'importe quel dessin » (découpe sur la photo, façons de bouger, film).
 - `js/scenes.js` : les 8 films (décor, animations, musique, phrase).
+- `js/types.js` : les 12 types et leur attaque.
+- `js/attaques.js` : les effets d'attaque.
 - `js/catalogue.js` : les feuilles à colorier.
 - `js/compagnons.js` : les compagnons (dessins et trajets).
 - `js/acteur3d.js` : le dessin en 3D (three.js).

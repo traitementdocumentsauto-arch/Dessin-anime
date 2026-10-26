@@ -3,6 +3,7 @@
 
 import { Acteur3D } from "./acteur3d.js";
 import { dessinerCompagnons } from "./compagnons.js";
+import { Attaque } from "./attaques.js";
 
 const limiter = (v, a, b) => Math.max(a, Math.min(b, v));
 const etape = (t, a, b) => limiter((t - a) / (b - a), 0, 1);
@@ -357,7 +358,8 @@ export class FilmLibre {
   // repliques : [{ t, duree, texte }] (voir paroles.js) ; voix : synthèse vocale (voix.js).
   // corps : « plat » (vu de dessus) ou « profil » pour le dessin en 3D (voir acteur3d.js).
   // amis : autres dessins de l'enfant [{ sprite, corps }] qui suivent le premier (2 au plus).
-  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null, corps = "profil", amis = [] } = {}) {
+  // typeAttaque : type du monstre de poche (feu, eau…) : effet lancé avec sa réplique d'attaque.
+  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null, corps = "profil", amis = [], typeAttaque = null } = {}) {
     this.canevas = canevas;
     this.ctx = canevas.getContext("2d");
     // Taille logique 1280 × 720 ; le canevas réel est plus petit sur téléphone (qualité q),
@@ -373,6 +375,8 @@ export class FilmLibre {
     this.scene = scene;
     this.repliques = repliques || [{ t: 15.6, duree: 2.2, texte: scene.phrase.replace("{p}", this.prenom) }];
     this.voix = voix;
+    this.typeAttaque = typeAttaque;
+    this.attaque = null;
     this.acteur = new Acteur3D(this.L, this.H, this.q);
     this.acteur.ajouter(sprite, corps);
     // Chaque ami a son « double » du film : même mouvement, mais sa taille, sans bruitages.
@@ -600,9 +604,15 @@ export class FilmLibre {
   dessiner(t) {
     const c = this.ctx, sc = this.scene;
     c.setTransform(this.q, 0, 0, this.q, 0, 0);
+    if (this.attaque) {
+      // L'écran tremble pendant certaines attaques.
+      const [dx, dy] = this.attaque.secousse(t);
+      c.translate(dx, dy);
+    }
     this.sons.avancer(t);
     c.drawImage(this.fond, 0, 0);
     this.pos = MOUVEMENTS[sc.mouvement](t, this);
+    if (this.attaque) this.pos = { ...this.pos, taille: this.pos.taille * this.attaque.gonfle(t) };
     this.posEcran = this.projeter(this.pos);
     if (sc.derriere) sc.derriere(c, t, this);
     const compagnons = sc.compagnons || [];
@@ -611,9 +621,16 @@ export class FilmLibre {
     this.posAmis = this.amis.map((a, k) => this.posAmi(k, t));
     if (t > 2.5) this.dessinerActeurs(t, replique ? replique.qui || 0 : -1);
     if (t > 2.5) dessinerCompagnons(c, t, this, compagnons, "devant");
+    if (this.attaque) {
+      this.attaque.dessiner(c, t);
+      if (this.attaque.fini(t)) this.attaque = null;
+    }
     if (sc.devant) sc.devant(c, t, this);
     this.repliques.forEach((r, k) => {
-      if (t >= r.t) this.signal("replique" + k, 1, null, () => this.voix && this.voix.dire(r.texte, { ami: !!r.qui }));
+      if (t >= r.t) this.signal("replique" + k, 1, null, () => {
+        if (this.voix) this.voix.dire(r.texte, { ami: !!r.qui });
+        if (r.attaque && this.typeAttaque) this.attaque = new Attaque(this.typeAttaque, t, this);
+      });
     });
     if (replique) {
       const qui = replique.qui || 0, f = qui ? this.amis[qui - 1].double : this;

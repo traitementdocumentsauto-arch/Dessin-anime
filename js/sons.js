@@ -257,6 +257,31 @@ export class Sons {
         break;
       case "tada": [523, 659, 784, 1047].forEach((f, k) => this.oscillateur("triangle", f, { volume: 0.12, attaque: 0.01, duree: k === 3 ? 0.8 : 0.15, decalage: k * 0.09 })); break;
       case "etoile": this.oscillateur("sine", 3000, { volume: 0.03, attaque: 0.01, duree: 0.6, vers: 1200 }); break;
+      case "feu": // souffle de flammes qui crépite
+        this.bruit({ volume: 0.3, attaque: 0.08, duree: 1.4, type: "lowpass", freq: 1800, vers: 250 });
+        for (let k = 0; k < 6; k++) this.bruit({ volume: 0.08, duree: 0.03, type: "highpass", freq: 3000, decalage: 0.1 + Math.random() * 1.2 });
+        break;
+      case "eau":
+        this.bruit({ volume: 0.22, attaque: 0.03, duree: 0.9, freq: 900, vers: 300, q: 0.7 });
+        for (let k = 0; k < 6; k++) this.oscillateur("sine", 300 + Math.random() * 400, { volume: 0.06, attaque: 0.01, duree: 0.1, vers: 1100, decalage: k * 0.12 });
+        break;
+      case "tonnerre":
+        this.bruit({ volume: 0.5, attaque: 0.005, duree: 0.25, type: "highpass", freq: 1500 });
+        this.bruit({ volume: 0.45, attaque: 0.02, duree: 1.6, type: "lowpass", freq: 400, vers: 60, decalage: 0.05 });
+        break;
+      case "cristal":
+        this.instrument("cloche", 2093, 0.8);
+        [2093, 2637, 3136, 2349, 2794].forEach((f, k) => this.oscillateur("sine", f, { volume: 0.05, attaque: 0.005, duree: 0.6, decalage: k * 0.09 }));
+        this.bruit({ volume: 0.12, attaque: 0.3, duree: 1.2, type: "highpass", freq: 5000 });
+        break;
+      case "fantome":
+        this.oscillateur("sine", 520, { volume: 0.12, attaque: 0.2, duree: 1.4, vers: 260, vibrato: 0.04 });
+        this.oscillateur("sine", 780, { volume: 0.05, attaque: 0.3, duree: 1.2, vers: 390, vibrato: 0.05 });
+        break;
+      case "psy":
+        this.oscillateur("sine", 300, { volume: 0.12, attaque: 0.1, duree: 1.4, vers: 1200, vibrato: 0.03 });
+        this.oscillateur("triangle", 450, { volume: 0.05, attaque: 0.1, duree: 1.4, vers: 1800 });
+        break;
       case "rire": [0, 1, 2, 3].forEach((k) => this.oscillateur("triangle", 700 - k * 60, { volume: 0.06, attaque: 0.01, duree: 0.09, vers: 500 - k * 60, decalage: k * 0.13 })); break;
     }
   }

@@ -7,6 +7,7 @@ import { SUJETS, couleursDuDessin, repliques } from "./paroles.js";
 import { Voix } from "./voix.js";
 import { CORPS_PLATS } from "./acteur3d.js";
 import { FEUILLES, GROUPES, vignetteSVG, urlImage } from "./catalogue.js";
+import { TYPES, nomDuType, typeParId } from "./types.js";
 import * as galerie from "./galerie.js";
 import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
@@ -92,7 +93,7 @@ async function dessinChoisi(fichier) {
     // Feuille du catalogue : on sait déjà ce que c'est.
     const f = etat.feuille;
     etat.feuille = null;
-    reglerInfos(f ? { sujet: f.sujet, nom: f.nom, phrase: f.phrase || "" } : { sujet: null, nom: "", phrase: "" });
+    reglerInfos(f ? { sujet: f.sujet, nom: f.nom, phrase: f.phrase || "", type: f.type || null } : { sujet: null, nom: "", phrase: "" });
     etat.idGalerie = null;
     montrer("apercu");
     dessinerApercu();
@@ -146,7 +147,7 @@ function carteFeuille(titre, image, lienImprimer, photo, type) {
   if (type) {
     const t = document.createElement("span");
     t.className = "type";
-    t.textContent = `Type ${type}`;
+    t.textContent = type;
     carte.append(t);
   }
   carte.append(actions);
@@ -161,19 +162,40 @@ function carteFeuille(titre, image, lienImprimer, photo, type) {
     h.textContent = texte;
     liste.append(h);
   };
-  const feuilles = GROUPES.flatMap(([id, nomGroupe]) => {
-    const du = FEUILLES.filter((f) => f.groupe === id);
-    return du.length ? [{ groupe: nomGroupe }, ...du] : [];
-  });
-  for (const f of feuilles) {
-    if (f.groupe && !f.id) { titreGroupe(f.groupe); continue; }
+  const boutonPhoto = (f, court) => {
     const photo = document.createElement("button");
     photo.className = "gros vert";
     photo.dataset.action = "feuille-photo";
     photo.dataset.feuille = f.id;
-    photo.textContent = "📷 Photo";
+    photo.textContent = court ? "📷" : "📷 Photo";
     photo.setAttribute("aria-label", `Photo de ${f.titre}`);
-    liste.append(carteFeuille(f.titre, urlImage(vignetteSVG(f)), `feuille.html?f=${f.id}`, photo, f.type));
+    return photo;
+  };
+  for (const [id, nomGroupe] of GROUPES) {
+    const du = FEUILLES.filter((f) => f.groupe === id);
+    if (!du.length) continue;
+    titreGroupe(nomGroupe);
+    if (id !== "monstres") {
+      for (const f of du) liste.append(carteFeuille(f.titre, urlImage(vignetteSVG(f)), `feuille.html?f=${f.id}`, boutonPhoto(f)));
+      continue;
+    }
+    // Monstres de poche : une ligne par famille, de l'évolution 1 à 3.
+    for (const base of du.filter((f) => f.stade === 1)) {
+      const famille = du.filter((f) => f.famille === base.famille).sort((a, b) => a.stade - b.stade);
+      const ty = typeParId(base.type);
+      const titre = document.createElement("h4");
+      titre.className = "nom-famille";
+      titre.textContent = `${ty ? ty.emoji + " " : ""}${famille.map((f) => f.titre).join(" → ")}`;
+      const ligne = document.createElement("div");
+      ligne.className = "famille";
+      for (const f of famille) {
+        const carte = carteFeuille(f.titre, urlImage(vignetteSVG(f)), `feuille.html?f=${f.id}`, boutonPhoto(f, true), `${nomDuType(f.type)} · ${f.stade}/3`);
+        carte.classList.add("compacte");
+        carte.querySelector("a").textContent = "🖨️";
+        ligne.append(carte);
+      }
+      liste.append(titre, ligne);
+    }
   }
   // La page « Au fond de la mer » (décor et personnages repérés par ses carrés noirs).
   const photo = document.createElement("label");
@@ -201,8 +223,26 @@ for (const sj of SUJETS) {
   listeSujets.append(b);
 }
 
+const listeTypes = $("types");
+for (const ty of TYPES) {
+  const b = document.createElement("button");
+  b.className = "sujet";
+  b.dataset.action = "type";
+  b.dataset.type = ty.id;
+  b.setAttribute("aria-pressed", "false");
+  const emoji = document.createElement("span");
+  emoji.textContent = ty.emoji;
+  const nom = document.createElement("span");
+  nom.textContent = ty.nom;
+  b.append(emoji, nom);
+  listeTypes.append(b);
+}
+
 function reglerInfos(infos) {
-  etat.infos = { sujet: infos.sujet || null, nom: infos.nom || "", phrase: infos.phrase || "" };
+  etat.infos = { sujet: infos.sujet || null, nom: infos.nom || "", phrase: infos.phrase || "", type: infos.type || null };
+  // Le type ne se choisit que pour un monstre de poche.
+  $("zone-types").hidden = etat.infos.sujet !== "pokemon";
+  listeTypes.querySelectorAll(".sujet").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.type === etat.infos.type)));
   const sj = SUJETS.find((x) => x.id === etat.infos.sujet);
   listeSujets.querySelectorAll(".sujet").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sujet === etat.infos.sujet)));
   $("nom-dessin").value = etat.infos.nom;
@@ -349,15 +389,21 @@ function lancerFilm(page, dejaGarde) {
   montrer("film");
   if (!etat.sons) etat.sons = new Sons();
   const prenom = lirePrenom() || "moi";
+  // Monstre de poche : son type (ou un type au hasard) donne l'effet de son attaque.
+  const attaque = !etat.modele && etat.infos.sujet === "pokemon"
+    ? typeParId(etat.infos.type) || TYPES[Math.floor(Math.random() * TYPES.length)]
+    : null;
   etat.film = etat.modele
     ? new Film($("canevas-film"), etat.modele, page, prenom, etat.sons)
     : new FilmLibre($("canevas-film"), page, prenom, etat.sons, etat.scene, {
       voix: etat.voix || (etat.voix = new Voix()),
       corps: CORPS_PLATS.has(etat.infos.sujet) ? "plat" : "profil",
       amis: amisDuFilm().map((a) => ({ sprite: a.sprite, corps: CORPS_PLATS.has(a.infos.sujet) ? "plat" : "profil" })),
+      typeAttaque: attaque && attaque.id,
       repliques: repliques({
-        sujet: SUJETS.find((x) => x.id === etat.infos.sujet), nom: etat.infos.nom, phrasePerso: etat.infos.phrase,
-        couleurs: etat.couleurs, scene: etat.scene, prenom,
+        sujet: SUJETS.find((x) => x.id === etat.infos.sujet), nom: etat.infos.nom,
+        phrasePerso: etat.infos.phrase || (attaque ? `Attaque ${attaque.attaque} !` : ""),
+        couleurs: etat.couleurs, scene: etat.scene, prenom, attaque: !!attaque,
         amis: amisDuFilm().map((a) => ({ sujet: SUJETS.find((x) => x.id === a.infos.sujet), nom: a.infos.nom })),
       }),
     });
@@ -435,6 +481,7 @@ const actions = {
     const meme = etat.infos.sujet === b.dataset.sujet;
     reglerInfos({ ...etat.infos, sujet: meme ? null : b.dataset.sujet });
   },
+  type: (b) => reglerInfos({ ...etat.infos, type: etat.infos.type === b.dataset.type ? null : b.dataset.type }),
   scene: (b) => {
     etat.scene = SCENES.find((s) => s.id === b.dataset.scene) || SCENES[0];
     lancerFilm(etat.page, etat.garde);

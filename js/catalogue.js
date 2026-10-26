@@ -1,3 +1,5 @@
+import { nomDuType } from "./types.js";
+
 // Catalogue de feuilles à colorier. Chaque feuille : un grand personnage en traits épais,
 // tourné vers la gauche, à colorier puis à prendre en photo (mode « n'importe quel dessin »).
 // Le dessin tient dans une boîte de 200 × 140 unités ; formes remplies de blanc, traits noirs.
@@ -9,9 +11,14 @@ const feuilleArbre = (bx, by, tx, ty, l) => {
   const mx = (bx + tx) / 2, my = (by + ty) / 2, n = Math.hypot(tx - bx, ty - by), px = (-(ty - by) / n) * l, py = ((tx - bx) / n) * l;
   return `M${bx} ${by} Q${mx + px} ${my + py} ${tx} ${ty} Q${mx - px} ${my - py} ${bx} ${by} Z`;
 };
+// Fleur : 5 pétales autour d'un cœur.
+const fleur = (cx, cy, r) => [
+  ...[0, 1, 2, 3, 4].map((k) => { const a = -Math.PI / 2 + (k * 2 * Math.PI) / 5; return { d: rond(cx + Math.cos(a) * r * 0.62, cy + Math.sin(a) * r * 0.62, r * 0.5) }; }),
+  { d: rond(cx, cy, r * 0.42) },
+];
 const oeil = (x, y, r = 6) => [{ d: rond(x, y, r) }, { d: rond(x - r * 0.25, y, r * 0.45), plein: true }];
 
-export const FEUILLES = [
+const BASES = [
   {
     id: "poisson", groupe: "mer", titre: "Le poisson", sujet: "poisson", nom: "le poisson", corps: "profil",
     formes: [
@@ -254,7 +261,7 @@ export const FEUILLES = [
 
   // ---------- Monstres de poche (inventés) ----------
   {
-    id: "pyroto", groupe: "monstres", titre: "Pyroto", type: "Feu", sujet: "pokemon", nom: "Pyroto", phrase: "Attaque Flamme Rigolote ! Fshhh !",
+    id: "pyroto", groupe: "monstres", titre: "Pyroto", type: "feu", sujet: "pokemon", nom: "Pyroto", phrase: "Attaque Flamme Rigolote ! Fshhh !",
     formes: [
       { d: "M140 80 C160 70, 170 50, 160 30 C175 38, 180 30, 178 18 C192 34, 198 56, 188 76 C196 74, 200 70, 198 64 C200 86, 182 104, 150 100 Z" },
       { d: "M158 88 C172 80, 180 66, 176 50", trait: true },
@@ -271,7 +278,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "aquabulle", groupe: "monstres", titre: "Aquabulle", type: "Eau", sujet: "pokemon", nom: "Aquabulle", phrase: "Attaque Jet de Bulles ! Blub blub !",
+    id: "aquabulle", groupe: "monstres", titre: "Aquabulle", type: "eau", sujet: "pokemon", nom: "Aquabulle", phrase: "Attaque Jet de Bulles ! Blub blub !",
     formes: [
       { d: "M140 70 C165 56, 186 60, 198 72 C186 84, 165 88, 140 82 Z" },
       { d: "M150 76 C166 72, 180 72, 192 72", trait: true },
@@ -287,7 +294,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "feuillon", groupe: "monstres", titre: "Feuillon", type: "Plante", sujet: "pokemon", nom: "Feuillon", phrase: "Attaque Tempête de Feuilles ! Fiou !",
+    id: "feuillon", groupe: "monstres", titre: "Feuillon", type: "plante", sujet: "pokemon", nom: "Feuillon", phrase: "Attaque Tempête de Feuilles ! Fiou !",
     formes: [
       ...[-165, -140, -115, -90, -65, -40, -15].map((a) => {
         const r = (a * Math.PI) / 180, c = Math.cos(r), si = Math.sin(r);
@@ -303,7 +310,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "volteo", groupe: "monstres", titre: "Voltéo", type: "Électrique", sujet: "pokemon", nom: "Voltéo", phrase: "Attaque Éclair Zigzag ! Bzzzt !",
+    id: "volteo", groupe: "monstres", titre: "Voltéo", type: "electrique", sujet: "pokemon", nom: "Voltéo", phrase: "Attaque Éclair Zigzag ! Bzzzt !",
     formes: [
       { d: "M144 70 L178 54 L168 72 L198 66 L166 94 L172 80 L144 88 Z" },
       { d: "M80 120 L76 136 M76 136 L66 139 M76 136 L84 139 M112 120 L112 136 M112 136 L102 139 M112 136 L120 139", trait: true },
@@ -318,7 +325,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "givrou", groupe: "monstres", titre: "Givrou", type: "Glace", sujet: "pokemon", nom: "Givrou", phrase: "Attaque Souffle Glacé ! Brrr !",
+    id: "givrou", groupe: "monstres", titre: "Givrou", type: "glace", sujet: "pokemon", nom: "Givrou", phrase: "Attaque Souffle Glacé ! Brrr !",
     formes: [
       { d: "M80 44 L84 14 L100 42 Z" }, { d: "M100 40 L112 4 L124 42 Z" }, { d: "M124 46 L144 16 L148 54 Z" },
       { d: "M112 12 L112 36 M86 22 L90 38 M140 26 L142 44", trait: true },
@@ -333,7 +340,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "fantomou", groupe: "monstres", titre: "Fantomou", type: "Fantôme", sujet: "pokemon", nom: "Fantomou", phrase: "Attaque Bouh Mystère ! Hou hou !",
+    id: "fantomou", groupe: "monstres", titre: "Fantomou", type: "fantome", sujet: "pokemon", nom: "Fantomou", phrase: "Attaque Bouh Mystère ! Hou hou !",
     formes: [
       { d: "M30 70 C30 20, 130 10, 150 50 C160 70, 176 88, 196 94 C180 104, 164 104, 150 98 C140 120, 130 110, 122 124 C112 110, 104 126, 94 116 C84 128, 74 114, 64 124 C56 112, 40 116, 36 104 C32 96, 30 84, 30 70 Z" },
       { d: "M56 86 C42 92, 30 102, 24 112 C40 110, 54 102, 62 94 Z" },
@@ -343,7 +350,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "drakeo", groupe: "monstres", titre: "Drakéo", type: "Dragon", sujet: "pokemon", nom: "Drakéo", phrase: "Attaque Rugissement du Dragon ! Grrraou !",
+    id: "drakeo", groupe: "monstres", titre: "Drakéo", type: "dragon", sujet: "pokemon", nom: "Drakéo", phrase: "Attaque Rugissement du Dragon ! Grrraou !",
     formes: [
       { d: "M100 58 C100 30, 120 16, 138 18 C128 30, 140 36, 128 44 C138 50, 128 60, 112 62 Z" },
       { d: "M140 92 C160 92, 176 84, 188 70 L198 76 L190 92 L182 86 C170 102, 156 108, 140 108 Z" },
@@ -359,7 +366,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "rocaille", groupe: "monstres", titre: "Rocaille", type: "Roche", sujet: "pokemon", nom: "Rocaille", phrase: "Attaque Avalanche de Cailloux ! Boum !",
+    id: "rocaille", groupe: "monstres", titre: "Rocaille", type: "roche", sujet: "pokemon", nom: "Rocaille", phrase: "Attaque Avalanche de Cailloux ! Boum !",
     formes: [
       { d: "M38 80 L10 70 L4 90 L30 98 Z" }, { d: "M166 80 L192 74 L196 96 L168 100 Z" },
       { d: "M60 118 L56 134 L84 134 L84 120 Z" }, { d: "M118 120 L118 134 L146 134 L142 118 Z" },
@@ -372,7 +379,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "plumio", groupe: "monstres", titre: "Plumio", type: "Vol", sujet: "pokemon", nom: "Plumio", phrase: "Attaque Tornade de Plumes ! Fwouuu !",
+    id: "plumio", groupe: "monstres", titre: "Plumio", type: "vol", sujet: "pokemon", nom: "Plumio", phrase: "Attaque Tornade de Plumes ! Fwouuu !",
     formes: [
       { d: "M150 76 L196 62 L188 78 L198 90 L150 90 Z" },
       { d: "M84 108 L80 126 M80 126 L72 130 M80 126 L86 132 M110 108 L110 126 M110 126 L102 130 M110 126 L116 132", trait: true },
@@ -387,7 +394,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "psylou", groupe: "monstres", titre: "Psylou", type: "Psy", sujet: "pokemon", nom: "Psylou", phrase: "Attaque Ondes Magiques ! Wouiii !",
+    id: "psylou", groupe: "monstres", titre: "Psylou", type: "psy", sujet: "pokemon", nom: "Psylou", phrase: "Attaque Ondes Magiques ! Wouiii !",
     formes: [
       { d: "M140 80 C168 78, 184 62, 182 46 C180 34, 166 30, 160 38 C170 40, 172 50, 168 58 C160 70, 150 74, 140 74 Z" },
       { d: rond(160, 34, 8) },
@@ -402,7 +409,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "lapaillette", groupe: "monstres", titre: "Lapaillette", type: "Fée", sujet: "pokemon", nom: "Lapaillette", phrase: "Attaque Poussière d'Étoiles ! Pling !",
+    id: "lapaillette", groupe: "monstres", titre: "Lapaillette", type: "fee", sujet: "pokemon", nom: "Lapaillette", phrase: "Attaque Poussière d'Étoiles ! Pling !",
     formes: [
       { d: "M90 62 C70 22, 110 0, 132 20 C142 32, 122 52, 96 66 Z" },
       { d: "M98 72 C112 52, 142 52, 148 68 C152 82, 126 86, 100 78 Z" },
@@ -420,7 +427,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "sablox", groupe: "monstres", titre: "Sablox", type: "Sol", sujet: "pokemon", nom: "Sablox", phrase: "Attaque Tremblement Tout Doux ! Brrroum !",
+    id: "sablox", groupe: "monstres", titre: "Sablox", type: "sol", sujet: "pokemon", nom: "Sablox", phrase: "Attaque Tremblement Tout Doux ! Brrroum !",
     formes: [
       { d: "M150 92 L196 104 L150 108 Z" },
       { d: "M64 94 L62 120 L78 120 L80 96 Z" }, { d: "M130 96 L130 120 L146 120 L146 94 Z" },
@@ -433,6 +440,193 @@ export const FEUILLES = [
     ],
   },
 ];
+
+
+// ---------- Évolutions des monstres de poche ----------
+// Chaque évolution garde le corps du monstre et gagne des éléments de son type :
+// derriere = dessiné avant le corps, devant = après. Tout touche le corps (sinon la photo
+// découpée le perdrait).
+const EVOLUTIONS = {
+  pyroto: [
+    { id: "pyrenard", titre: "Pyrenard", phrase: "Attaque Crocs de Feu ! Grrr, fshhh !",
+      derriere: [
+        { d: "M146 94 C172 96, 196 80, 194 54 C204 72, 204 98, 186 112 C174 120, 158 116, 146 106 Z" },
+        { d: "M56 76 C58 56, 72 50, 74 38 C82 50, 84 58, 92 58 C94 48, 102 44, 106 36 C112 52, 106 62, 110 72 Z" },
+      ],
+      devant: [{ d: "M102 62 C100 48, 106 42, 112 30 C116 44, 124 48, 126 60 Z" }, { d: "M22 36 L42 40", trait: true }] },
+    { id: "pyroloup", titre: "Pyroloup", phrase: "Attaque Tornade de Flammes ! Fwooosh !",
+      derriere: [
+        { d: "M150 70 C150 40, 166 20, 160 -6 C178 12, 186 40, 172 70 Z" },
+        { d: "M146 94 C172 96, 196 80, 194 54 C204 72, 204 98, 186 112 C174 120, 158 116, 146 106 Z" },
+        { d: "M56 76 C58 56, 72 50, 74 38 C82 50, 84 58, 92 58 C94 48, 102 44, 106 36 C112 52, 106 62, 110 72 Z" },
+        { d: "M30 28 C28 10, 38 4, 42 -10 C48 6, 56 8, 58 24 Z" },
+      ],
+      devant: [
+        { d: "M102 62 C100 48, 106 42, 112 30 C116 44, 124 48, 126 60 Z" },
+        { d: "M62 132 C58 122, 64 118, 66 108 C70 118, 78 118, 84 128 Z" },
+        { d: "M114 132 C110 122, 116 118, 118 108 C122 118, 130 118, 136 128 Z" },
+        { d: "M84 76 L92 84 L98 76 L106 84 M116 74 L122 82 L128 74", trait: true },
+        { d: "M22 36 L42 40", trait: true },
+      ] },
+  ],
+  aquabulle: [
+    { id: "aquaflot", titre: "Aquaflot", phrase: "Attaque Vague Géante ! Splash !",
+      derriere: [
+        { d: "M70 60 C80 36, 112 30, 140 58 Z" },
+        { d: "M146 74 C168 46, 190 40, 200 44 C192 60, 192 86, 200 104 C190 106, 168 98, 146 80 Z" },
+      ],
+      devant: [{ d: "M30 42 C28 34, 36 26, 40 20 C44 28, 50 36, 46 42 C42 48, 34 48, 30 42 Z" }] },
+    { id: "aquatitan", titre: "Aquatitan", phrase: "Attaque Hydro-Tempête ! Splaaash !",
+      derriere: [
+        { d: "M60 62 C68 20, 118 6, 152 36 C140 40, 136 48, 134 60 Z" },
+        { d: "M146 74 C168 46, 190 40, 200 44 C192 60, 192 86, 200 104 C190 106, 168 98, 146 80 Z" },
+        { d: "M58 88 C46 108, 54 126, 70 130 C72 116, 78 104, 86 92 Z" },
+      ],
+      devant: [
+        { d: "M18 48 L4 22 L28 40 Z" }, { d: "M48 40 L60 14 L62 46 Z" },
+        { d: "M30 42 C28 34, 36 26, 40 20 C44 28, 50 36, 46 42 C42 48, 34 48, 30 42 Z" },
+        { d: "M88 60 C100 72, 120 72, 132 60", trait: true },
+      ] },
+  ],
+  feuillon: [
+    { id: "buissonnet", titre: "Buissonnet", phrase: "Attaque Pluie de Pétales ! Fiou fiou !",
+      derriere: [], devant: [...fleur(104, 46, 16)] },
+    { id: "forestor", titre: "Forestor", phrase: "Attaque Forêt Géante ! Crrrac !",
+      derriere: [-150, -120, -90, -60, -30].map((a) => {
+        const r = (a * Math.PI) / 180, c = Math.cos(r), si = Math.sin(r);
+        return { d: feuilleArbre(104 + 30 * c, 92 + 26 * si, 104 + 100 * c, 92 + 92 * si, 16) };
+      }),
+      devant: [...fleur(104, 46, 16), ...fleur(76, 56, 11), ...fleur(132, 54, 11), { d: "M38 84 L30 62 L22 54 M30 62 L38 50", trait: true }] },
+  ],
+  volteo: [
+    { id: "electroc", titre: "Électroc", phrase: "Attaque Tonnerre Zigzag ! Bzzzt !",
+      derriere: [
+        { d: "M112 52 L132 12 L142 32 L162 2 L158 42 L178 32 L150 72 Z" },
+        { d: "M82 40 L68 6 L90 20 L98 -10 L112 22 L126 0 L120 40 Z" },
+      ],
+      devant: [{ d: "M90 88 L98 82 L96 92 L106 86", trait: true }] },
+    { id: "fulguraigle", titre: "Fulguraigle", phrase: "Attaque Éclair Royal ! Krakooom !",
+      derriere: [
+        { d: "M112 52 L132 12 L142 32 L162 2 L158 42 L178 32 L150 72 Z" },
+        { d: "M82 40 L68 6 L90 20 L98 -10 L112 22 L126 0 L120 40 Z" },
+        { d: "M120 108 L150 130 L148 116 L176 128 L160 100 L176 104 L140 88 Z" },
+        { d: "M142 76 L186 52 L174 72 L200 70 L170 96 L178 84 L142 92 Z" },
+      ],
+      devant: [{ d: "M56 70 L30 70 C24 76, 28 86, 36 86 L56 90 Z" }, { d: "M60 54 L84 58", trait: true }, { d: "M90 88 L98 82 L96 92 L106 86", trait: true }] },
+  ],
+  givrou: [
+    { id: "givrours", titre: "Givrours", phrase: "Attaque Blizzard ! Brrrrr !",
+      derriere: [{ d: "M146 54 L170 26 L166 66 Z" }],
+      devant: [{ d: "M28 42 L30 20 L40 38 Z" }, { d: "M42 38 L48 14 L56 38 Z" }] },
+    { id: "glaciator", titre: "Glaciator", phrase: "Attaque Ère Glaciaire ! Crrrac !",
+      derriere: [
+        { d: "M68 58 L88 24 L112 18 L142 30 L164 58 L162 80 Z" },
+        { d: "M150 52 L182 8 L176 64 Z" }, { d: "M96 22 L104 -12 L118 20 Z" },
+      ],
+      devant: [{ d: "M28 42 L30 20 L40 38 Z" }, { d: "M42 38 L48 14 L56 38 Z" }, { d: "M16 82 L18 98 L24 84 Z" }] },
+  ],
+  fantomou: [
+    { id: "fantomasque", titre: "Fantomasque", phrase: "Attaque Ombre Farceuse ! Hihihi !",
+      derriere: [{ d: "M146 48 C168 28, 190 28, 198 38 C186 44, 176 50, 166 62 Z" }],
+      devant: [{ d: "M56 36 C64 12, 96 2, 110 28 Z" }, { d: "M62 30 C78 22, 94 20, 106 24", trait: true }] },
+    { id: "spectroi", titre: "Spectroi", phrase: "Attaque Cauchemar Royal ! Hou hou hou !",
+      derriere: [
+        { d: "M22 84 C8 40, 40 2, 100 4 C150 6, 172 40, 178 72 C160 60, 140 70, 120 60 Z" },
+        { d: "M146 48 C168 28, 190 28, 198 38 C186 44, 176 50, 166 62 Z" },
+      ],
+      devant: [{ d: "M54 26 L56 -4 L68 12 L80 -10 L92 12 L104 -4 L108 22 Z" }, { d: rond(80, 12, 3) }] },
+  ],
+  drakeo: [
+    { id: "drakeon", titre: "Drakéon", phrase: "Attaque Souffle de Dragon ! Rooooar !",
+      derriere: [
+        { d: "M96 60 C90 12, 130 -8, 168 0 C154 14, 166 26, 150 34 C164 40, 154 54, 130 60 Z" },
+        { d: "M104 58 L112 40 L120 56 Z" }, { d: "M124 60 L134 44 L140 62 Z" }, { d: "M140 70 L154 58 L154 78 Z" },
+      ],
+      devant: [{ d: "M42 22 L52 -6 L62 24 Z" }] },
+    { id: "dragorion", titre: "Dragorion", phrase: "Attaque Météore Draconique ! Braoum !",
+      derriere: [
+        { d: "M84 62 C64 20, 80 -8, 104 -12 C100 4, 110 14, 100 22 C112 28, 104 40, 96 48 Z" },
+        { d: "M96 60 C90 12, 130 -8, 168 0 C154 14, 166 26, 150 34 C164 40, 154 54, 130 60 Z" },
+        { d: "M104 58 L112 40 L120 56 Z" }, { d: "M124 60 L134 44 L140 62 Z" }, { d: "M140 70 L154 58 L154 78 Z" },
+        { d: "M180 66 L200 56 L196 86 Z" },
+      ],
+      devant: [{ d: "M40 24 C34 2, 46 -12, 62 -14 C54 -2, 54 10, 58 26 Z" }] },
+  ],
+  rocaille: [
+    { id: "rocaillou", titre: "Rocaillou", phrase: "Attaque Poing de Pierre ! Boum !",
+      derriere: [{ d: "M58 46 L62 20 L76 40 Z" }, { d: "M116 30 L130 4 L138 34 Z" }],
+      devant: [{ d: rond(12, 84, 14) }, { d: rond(188, 86, 14) }] },
+    { id: "montagnor", titre: "Montagnor", phrase: "Attaque Séisme Géant ! Badaboum !",
+      derriere: [
+        { d: "M56 44 L100 -10 L146 32 Z" },
+        { d: "M86 8 L100 -10 L114 8 L106 4 L100 10 L94 4 Z" },
+        { d: "M58 46 L62 20 L76 40 Z" }, { d: "M116 30 L130 4 L138 34 Z" },
+      ],
+      devant: [{ d: rond(12, 84, 16) }, { d: rond(188, 86, 16) }, { d: "M54 48 L76 54 M106 46 L84 52", trait: true }] },
+  ],
+  plumio: [
+    { id: "plumaigle", titre: "Plumaigle", phrase: "Attaque Rafale Plumée ! Fwiiiou !",
+      derriere: [{ d: "M92 84 C112 112, 150 122, 178 114 C162 106, 160 98, 150 92 Z" }],
+      devant: [{ d: "M30 46 L22 20 L36 34 L40 12 L48 40 Z" }] },
+    { id: "cyclonaile", titre: "Cyclonaile", phrase: "Attaque Cyclone Céleste ! Fwouuum !",
+      derriere: [
+        { d: "M76 64 C70 10, 120 -12, 176 -6 C160 8, 168 22, 154 30 C168 36, 160 50, 140 56 C150 60, 140 70, 120 68 Z" },
+        { d: "M92 84 C112 112, 150 122, 178 114 C162 106, 160 98, 150 92 Z" },
+        { d: "M146 78 L200 50 L192 70 L200 82 L192 96 L200 112 L146 96 Z" },
+      ],
+      devant: [{ d: "M30 46 L22 20 L36 34 L40 12 L48 40 Z" }] },
+  ],
+  psylou: [
+    { id: "psymiou", titre: "Psymiou", phrase: "Attaque Psy-Rayon ! Wouiii !",
+      derriere: [{ d: "M140 92 C168 98, 188 110, 196 126 C184 122, 172 118, 160 116 C152 110, 146 104, 140 100 Z" }],
+      devant: [{ d: "M44 26 L53 38 L44 50 L35 38 Z" }] },
+    { id: "psymagus", titre: "Psymagus", phrase: "Attaque Tempête Mentale ! Wouiiiii !",
+      derriere: [
+        { d: "M64 72 C46 100, 52 126, 62 136 L148 136 C138 120, 148 100, 140 76 Z" },
+        { d: "M140 92 C168 98, 188 110, 196 126 C184 122, 172 118, 160 116 C152 110, 146 104, 140 100 Z" },
+      ],
+      devant: [
+        { d: "M26 40 L50 -14 L74 36 Z" }, { d: "M16 40 C30 32, 62 30, 82 38 C62 46, 30 48, 16 40 Z" }, { d: rond(50, 10, 4) },
+      ] },
+  ],
+  lapaillette: [
+    { id: "lapetoile", titre: "Lapétoile", phrase: "Attaque Arc-en-ciel Magique ! Pling pling !",
+      derriere: [{ d: "M96 80 C110 100, 150 110, 166 92 C170 80, 150 70, 120 74 Z" }],
+      devant: [...fleur(48, 40, 9)] },
+    { id: "lunalapin", titre: "Lunalapin", phrase: "Attaque Lumière de Lune ! Pliiiing !",
+      derriere: [
+        { d: "M86 62 C60 10, 112 -14, 146 8 C160 22, 136 48, 96 66 Z" },
+        { d: "M96 80 C110 100, 150 110, 166 92 C170 80, 150 70, 120 74 Z" },
+      ],
+      devant: [...fleur(48, 40, 9), { d: "M36 46 C28 50, 30 60, 40 62 C34 58, 34 50, 40 48 Z" }] },
+  ],
+  sablox: [
+    { id: "sablopic", titre: "Sablopic", phrase: "Attaque Tempête de Sable ! Fsshhh !",
+      derriere: [{ d: "M66 58 L70 40 L80 54 Z" }, { d: "M92 48 L98 30 L106 46 Z" }, { d: "M120 48 L128 30 L134 48 Z" }, { d: "M144 60 L154 44 L156 64 Z" }],
+      devant: [{ d: "M60 116 L54 128 L62 124 L64 130 L72 122 L74 116 Z" }] },
+    { id: "foreusor", titre: "Foreusor", phrase: "Attaque Foreuse Géante ! Vrrrrr !",
+      derriere: [
+        { d: "M64 60 L68 34 L82 54 Z" }, { d: "M90 50 L98 22 L108 48 Z" }, { d: "M118 50 L128 22 L136 50 Z" }, { d: "M142 62 L158 38 L158 66 Z" },
+        { d: rond(194, 106, 10) },
+      ],
+      devant: [
+        { d: "M60 116 L54 128 L62 124 L64 130 L72 122 L74 116 Z" },
+        { d: "M24 76 L36 42 L48 76 Z" }, { d: "M28 68 L44 62 M31 60 L41 56 M33 52 L39 50", trait: true },
+      ] },
+  ],
+};
+
+// Le catalogue : chaque monstre de poche suivi de ses deux évolutions.
+export const FEUILLES = BASES.flatMap((f) => {
+  if (f.groupe !== "monstres") return [f];
+  return [
+    { ...f, famille: f.id, stade: 1 },
+    ...(EVOLUTIONS[f.id] || []).map((e, i) => ({
+      id: e.id, groupe: "monstres", titre: e.titre, type: f.type, sujet: "pokemon", nom: e.titre, phrase: e.phrase,
+      famille: f.id, stade: i + 2, formes: [...e.derriere, ...f.formes, ...e.devant],
+    })),
+  ];
+});
 
 function echapper(t) {
   return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -455,7 +649,7 @@ export function feuilleSVG(f) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" width="210mm" height="297mm">` +
     `<rect width="210" height="297" fill="#fff"/>` +
     `<text x="105" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="16">${echapper(f.titre)}</text>` +
-    (f.type ? `<text x="105" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold">Type ${echapper(f.type)}</text>` : "") +
+    (f.type ? `<text x="105" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold">Type ${echapper(nomDuType(f.type))}${f.stade ? ` · Évolution ${f.stade} sur 3` : ""}</text>` : "") +
     `<text x="105" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="5">Colorie-moi, puis prends-moi en photo dans « Mon dessin animé » !</text>` +
     `<g transform="translate(8 82) scale(0.97)">${dessinSVG(f.formes)}</g>` +
     `<text x="105" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="3.5" fill="#888">Mon dessin animé · ${echapper(f.titre)}</text>` +
@@ -464,7 +658,7 @@ export function feuilleSVG(f) {
 
 // Petite image du personnage seul (pour le catalogue à l'écran).
 export function vignetteSVG(f) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 208 148">${dessinSVG(f.formes)}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -18 212 160">${dessinSVG(f.formes)}</svg>`;
 }
 
 export function urlImage(svg) {

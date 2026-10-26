@@ -13,6 +13,8 @@
 :root[data-theme="dark"] { --fond: #0d2233; --texte: #e8f4ff; --surface: #18374f; color-scheme: dark; }
 
 * { box-sizing: border-box; }
+/* Un élément caché (attribut hidden) le reste, même avec un display écrit plus bas. */
+[hidden] { display: none !important; }
 html, body { margin: 0; min-height: 100%; }
 body {
   background: var(--fond);
@@ -163,3 +165,11 @@ label.petit { display: block; text-align: center; cursor: pointer; }
 .feuille .actions .gros { box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2); }
 .liste-feuilles .groupe { grid-column: 1 / -1; margin: 12px 0 0; font-size: 1.5rem; text-align: center; }
 .feuille .type { font-size: 0.95rem; font-weight: bold; color: #c2410c; margin-top: -6px; }
+.liste-feuilles .nom-famille { grid-column: 1 / -1; margin: 8px 0 -4px; font-size: 1.1rem; text-align: center; }
+.liste-feuilles .famille { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.feuille.compacte { padding: 6px; gap: 4px; }
+.feuille.compacte .titre { font-size: 0.95rem; }
+.feuille.compacte .type { font-size: 0.8rem; margin-top: 0; }
+.feuille.compacte .actions { flex-direction: row; gap: 4px; }
+.feuille.compacte .actions > * { padding: 8px 2px; font-size: 1.1rem; }
+.zone-types { display: flex; flex-direction: column; align-items: center; gap: 6px; }

@@ -109,7 +109,8 @@ function hasard(liste) { return liste[Math.floor(Math.random() * liste.length)];
 
 // Les répliques du film, avec l'instant où elles commencent et leur durée à l'écran.
 // amis : [{ sujet, nom }] des autres dessins du film ; chacun se présente (qui = 1, 2).
-export function repliques({ sujet, nom, phrasePerso, couleurs, scene, prenom, amis = [] }) {
+// attaque = monstre de poche : sa phrase (son attaque) est dite au centre de l'écran, à 15,6 s.
+export function repliques({ sujet, nom, phrasePerso, couleurs, scene, prenom, amis = [], attaque = false }) {
   sujet = sujet || SUJETS[SUJETS.length - 1];
   nom = (nom || "").trim() || sujet.nom;
   const v = { f: genreDuNom(nom, sujet), prenom, nom };
@@ -126,9 +127,17 @@ export function repliques({ sujet, nom, phrasePerso, couleurs, scene, prenom, am
     const n = (a.nom || "").trim() || (sj.id === "autre" ? "un autre dessin" : sj.nom);
     lignes.push({ t: tAmi[k], duree: 1.6, qui: k + 1, texte: `Et moi, je suis ${n} !` });
   });
-  lignes.push({ t: amis.length ? 11.2 : 10.2, duree: amis.length ? 2.4 : 2.6, texte: phrasePerso && phrasePerso.trim() ? phrasePerso.trim() : remplir(hasard(sujet.phrases), v) });
+  const tMilieu = amis.length ? 11.2 : 10.2, dMilieu = amis.length ? 2.4 : 2.6;
+  const perso = phrasePerso && phrasePerso.trim() ? phrasePerso.trim() : remplir(hasard(sujet.phrases), v);
+  const film = remplir(PHRASES_FILM[scene.id] || scene.phrase, v);
+  if (attaque) {
+    lignes.push({ t: tMilieu, duree: dMilieu, texte: film });
+    lignes.push({ t: 15.6, duree: 2.3, texte: perso, attaque: true });
+  } else {
+    lignes.push({ t: tMilieu, duree: dMilieu, texte: perso });
+    lignes.push({ t: 15.6, duree: 2.2, texte: film });
+  }
   lignes.sort((a, b) => a.t - b.t);
-  lignes.push({ t: 15.6, duree: 2.2, texte: remplir(PHRASES_FILM[scene.id] || scene.phrase, v) });
   lignes.push({ t: 18, duree: 1.5, texte: remplir("Au revoir {prenom} !", v) });
   return lignes;
 }
