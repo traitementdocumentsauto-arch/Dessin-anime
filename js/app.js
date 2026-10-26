@@ -11,7 +11,9 @@ import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
 const $ = (id) => document.getElementById(id);
 const etat = { photo: null, coins: null, page: null, modele: MER, film: null, sons: null, garde: false, sprite: null, scene: SCENES[0],
-  infos: { sujet: null, nom: "", phrase: "" }, couleurs: null, voix: null };
+  infos: { sujet: null, nom: "", phrase: "" }, couleurs: null, voix: null,
+  // Autres dessins gardés qui jouent avec celui-ci : numéros choisis, et dessins déjà chargés.
+  idGalerie: null, amis: new Set(), amisCharges: new Map() };
 
 function lirePrenom() {
   try { return localStorage.getItem("prenom") || ""; } catch { return ""; }
@@ -86,6 +88,7 @@ async function dessinChoisi(fichier) {
     // Une photo en hauteur d'un dessin en largeur : on le met d'emblée en largeur.
     etat.sprite = sprite.height > sprite.width * 1.15 ? tournerSprite(sprite) : sprite;
     reglerInfos({ sujet: null, nom: "", phrase: "" });
+    etat.idGalerie = null;
     montrer("apercu");
     dessinerApercu();
   } catch {
@@ -150,6 +153,42 @@ function choisirFilm(sprite, dejaGarde) {
   etat.garde = dejaGarde;
   etat.modele = null;
   montrer("choix-film");
+  afficherAmis();
+}
+
+// ---------- Amis : d'autres dessins gardés qui jouent dans le film ----------
+
+async function afficherAmis() {
+  const liste = $("liste-amis");
+  liste.replaceChildren();
+  let dessins = [];
+  try { dessins = (await galerie.lister()).filter((d) => d.pageId === "libre" && d.id !== etat.idGalerie); } catch { /* stockage indisponible */ }
+  $("zone-amis").hidden = dessins.length === 0;
+  for (const id of [...etat.amis]) if (!dessins.some((d) => d.id === id)) etat.amis.delete(id);
+  for (const d of dessins.reverse().slice(0, 12)) {
+    const b = document.createElement("button");
+    b.className = "ami";
+    b.dataset.action = "ami";
+    b.dataset.id = d.id;
+    b.setAttribute("aria-pressed", String(etat.amis.has(d.id)));
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(d.image);
+    img.alt = (d.infos && d.infos.nom) || "Dessin";
+    img.addEventListener("load", () => URL.revokeObjectURL(img.src), { once: true });
+    b.append(img);
+    liste.append(b);
+    if (!etat.amisCharges.has(d.id)) etat.amisCharges.set(d.id, { infos: d.infos || {}, sprite: null, blob: d.image });
+  }
+}
+
+// Charge à l'avance l'image d'un ami (le film doit pouvoir démarrer tout de suite).
+async function chargerAmi(id) {
+  const a = etat.amisCharges.get(id);
+  if (a && !a.sprite) a.sprite = await galerie.enCanevas(a.blob);
+}
+
+function amisDuFilm() {
+  return [...etat.amis].map((id) => etat.amisCharges.get(id)).filter((a) => a && a.sprite).slice(0, 2);
 }
 
 function dessinerApercu() {
@@ -249,9 +288,11 @@ function lancerFilm(page, dejaGarde) {
     : new FilmLibre($("canevas-film"), page, prenom, etat.sons, etat.scene, {
       voix: etat.voix || (etat.voix = new Voix()),
       corps: CORPS_PLATS.has(etat.infos.sujet) ? "plat" : "profil",
+      amis: amisDuFilm().map((a) => ({ sprite: a.sprite, corps: CORPS_PLATS.has(a.infos.sujet) ? "plat" : "profil" })),
       repliques: repliques({
         sujet: SUJETS.find((x) => x.id === etat.infos.sujet), nom: etat.infos.nom, phrasePerso: etat.infos.phrase,
         couleurs: etat.couleurs, scene: etat.scene, prenom,
+        amis: amisDuFilm().map((a) => ({ sujet: SUJETS.find((x) => x.id === a.infos.sujet), nom: a.infos.nom })),
       }),
     });
   if (etat.voix) etat.voix.actif = etat.sons.actif;
@@ -285,7 +326,13 @@ async function afficherGalerie() {
     img.alt = "Dessin";
     img.addEventListener("click", async () => {
       const image = await galerie.enCanevas(d.image);
-      if (d.pageId === "libre") { reglerInfos(d.infos || {}); etat.couleurs = null; return choisirFilm(image, true); }
+      if (d.pageId === "libre") {
+        reglerInfos(d.infos || {});
+        etat.couleurs = null;
+        etat.idGalerie = d.id;
+        etat.amis.delete(d.id);
+        return choisirFilm(image, true);
+      }
       etat.modele = PAGES.find((p) => p.id === d.pageId) || MER;
       lancerFilm(image, true);
     });
@@ -332,6 +379,16 @@ const actions = {
     lancerFilm(etat.page, etat.garde);
   },
   "autre-film": () => choisirFilm(etat.page, etat.garde),
+  ami: async (b) => {
+    const id = Number(b.dataset.id);
+    if (etat.amis.has(id)) etat.amis.delete(id);
+    else {
+      if (etat.amis.size >= 2) { message("Deux amis au plus dans un film !"); return; }
+      etat.amis.add(id);
+      try { await chargerAmi(id); } catch { etat.amis.delete(id); message("Je n'arrive pas à ouvrir ce dessin."); }
+    }
+    document.querySelectorAll(".ami").forEach((x) => x.setAttribute("aria-pressed", String(etat.amis.has(Number(x.dataset.id)))));
+  },
   accueil: () => montrer("accueil"),
   galerie: afficherGalerie,
   tourner: () => { etat.coins = tourner(etat.coins); dessinerReglage(); },

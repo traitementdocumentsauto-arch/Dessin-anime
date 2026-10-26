@@ -139,3 +139,12 @@ label.petit { display: block; text-align: center; cursor: pointer; }
   font: inherit; font-size: 1.2rem; padding: 10px 14px; border-radius: 14px;
   border: 3px solid #9cc9e6; background: var(--surface); color: var(--texte);
 }
+
+.zone-amis { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 900px; }
+.liste-amis { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 4px; }
+.ami {
+  flex: 0 0 auto; width: 92px; height: 72px; padding: 6px; border-radius: 16px;
+  border: 3px solid #9cc9e6; background: var(--surface); display: flex; align-items: center; justify-content: center;
+}
+.ami img { max-width: 100%; max-height: 100%; }
+.ami[aria-pressed="true"] { border-color: var(--vert); background: #d9f7e6; box-shadow: 0 0 0 3px var(--vert); }

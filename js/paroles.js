@@ -108,7 +108,8 @@ function remplir(texte, v) {
 function hasard(liste) { return liste[Math.floor(Math.random() * liste.length)]; }
 
 // Les répliques du film, avec l'instant où elles commencent et leur durée à l'écran.
-export function repliques({ sujet, nom, phrasePerso, couleurs, scene, prenom }) {
+// amis : [{ sujet, nom }] des autres dessins du film ; chacun se présente (qui = 1, 2).
+export function repliques({ sujet, nom, phrasePerso, couleurs, scene, prenom, amis = [] }) {
   sujet = sujet || SUJETS[SUJETS.length - 1];
   nom = (nom || "").trim() || sujet.nom;
   const v = { f: genreDuNom(nom, sujet), prenom, nom };
@@ -119,7 +120,14 @@ export function repliques({ sujet, nom, phrasePerso, couleurs, scene, prenom }) 
     if (b) t += b.peu ? ` avec un peu de ${b.nom}` : ` avec du ${b.nom}`;
     lignes.push({ t: 7.3, duree: 2.2, texte: remplir(t + " !", v) });
   }
-  lignes.push({ t: 10.2, duree: 2.6, texte: phrasePerso && phrasePerso.trim() ? phrasePerso.trim() : remplir(hasard(sujet.phrases), v) });
+  const tAmi = [9.5, 13.7];
+  amis.slice(0, 2).forEach((a, k) => {
+    const sj = a.sujet || SUJETS[SUJETS.length - 1];
+    const n = (a.nom || "").trim() || (sj.id === "autre" ? "un autre dessin" : sj.nom);
+    lignes.push({ t: tAmi[k], duree: 1.6, qui: k + 1, texte: `Et moi, je suis ${n} !` });
+  });
+  lignes.push({ t: amis.length ? 11.2 : 10.2, duree: amis.length ? 2.4 : 2.6, texte: phrasePerso && phrasePerso.trim() ? phrasePerso.trim() : remplir(hasard(sujet.phrases), v) });
+  lignes.sort((a, b) => a.t - b.t);
   lignes.push({ t: 15.6, duree: 2.2, texte: remplir(PHRASES_FILM[scene.id] || scene.phrase, v) });
   lignes.push({ t: 18, duree: 1.5, texte: remplir("Au revoir {prenom} !", v) });
   return lignes;

@@ -15,14 +15,14 @@ export class Voix {
     this.synthese.addEventListener?.("voiceschanged", choisir);
   }
 
-  // aigu = voix du personnage ; sinon voix du conteur.
-  dire(texte, { aigu = true } = {}) {
+  // aigu = voix du personnage ; sinon voix du conteur. ami = voix un peu différente.
+  dire(texte, { aigu = true, ami = false } = {}) {
     if (!this.synthese || !this.actif || !texte) return;
     const u = new SpeechSynthesisUtterance(texte.replace(/…/g, ", "));
     u.lang = "fr-FR";
     if (this.voixFr) u.voice = this.voixFr;
-    u.pitch = aigu ? 1.7 : 1;
-    u.rate = aigu ? 1.08 : 0.95;
+    u.pitch = ami ? 1.3 : aigu ? 1.7 : 1;
+    u.rate = ami ? 1.15 : aigu ? 1.08 : 0.95;
     this.synthese.speak(u);
   }
 

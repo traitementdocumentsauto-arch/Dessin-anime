@@ -356,7 +356,8 @@ export class FilmLibre {
   // Le dessin regarde vers la gauche (on le règle avant avec « Tourner » et « Retourner »).
   // repliques : [{ t, duree, texte }] (voir paroles.js) ; voix : synthèse vocale (voix.js).
   // corps : « plat » (vu de dessus) ou « profil » pour le dessin en 3D (voir acteur3d.js).
-  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null, corps = "profil" } = {}) {
+  // amis : autres dessins de l'enfant [{ sprite, corps }] qui suivent le premier (2 au plus).
+  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null, corps = "profil", amis = [] } = {}) {
     this.canevas = canevas;
     this.ctx = canevas.getContext("2d");
     // Taille logique 1280 × 720 ; le canevas réel est plus petit sur téléphone (qualité q),
@@ -372,7 +373,19 @@ export class FilmLibre {
     this.scene = scene;
     this.repliques = repliques || [{ t: 15.6, duree: 2.2, texte: scene.phrase.replace("{p}", this.prenom) }];
     this.voix = voix;
-    this.acteur = new Acteur3D(sprite, this.L, this.H, corps, this.q);
+    this.acteur = new Acteur3D(this.L, this.H, this.q);
+    this.acteur.ajouter(sprite, corps);
+    // Chaque ami a son « double » du film : même mouvement, mais sa taille, sans bruitages.
+    this.amis = amis.slice(0, 2).map((a) => {
+      this.acteur.ajouter(a.sprite, a.corps);
+      const double = Object.create(this);
+      double.sprite = a.sprite;
+      double.signal = () => {};
+      double.taillePx = (taille) => FilmLibre.prototype.taillePx.call(double, taille * 0.6);
+      double.hauteurRel = (taille) => double.taillePx(taille)[1] / this.H;
+      return { ...a, double };
+    });
+    this.posAmis = [];
     this.r = Math.random;
     this.etat = {};
     this.signaux = {};
@@ -394,6 +407,50 @@ export class FilmLibre {
   }
 
   hauteurRel(taille) { return this.taillePx(taille)[1] / this.H; }
+
+  // Place de l'ami k : le même trajet, un peu en retard, au-dessus ou en dessous
+  // (à la même hauteur quand le mouvement suit le sol).
+  posAmi(k, t) {
+    const ami = this.amis[k], retard = 0.7 * (k + 1);
+    if (t - retard < 2.6) return null;
+    const p = MOUVEMENTS[this.scene.mouvement](t - retard, ami.double);
+    // Un peu derrière lui (du côté de sa queue), et plus haut ou plus bas sauf sur le sol.
+    const sol = ["saut", "glisse"].includes(this.scene.mouvement);
+    const x = p.x - p.sens * 0.24;
+    return sol ? { ...p, x } : { ...p, x, y: p.y + (k ? -0.22 : 0.22) };
+  }
+
+  // Tous les dessins : en 3D dans une seule scène, sinon en 2D. parleur = numéro de celui qui parle.
+  dessinerActeurs(t, parleur) {
+    const c = this.ctx;
+    const liste = [{ p: this.pos, f: this }, ...this.amis.map((a, k) => ({ p: this.posAmis[k], f: a.double }))];
+    if (this.acteur.ok) {
+      const poses = liste.map(({ p, f }, i) => {
+        if (!p) return null;
+        const def = DEFORMATIONS[p.deforme];
+        // Les déformations du mouvement s'ajoutent (à moitié) à celles du corps.
+        const deforme = def ? (u, v) => { const [dx, dy] = def(u, v, t + i * 0.37, p); return [dx * 0.5, dy * 0.5]; } : () => [0, 0];
+        return { p, hauteur: f.hauteurRel(p.taille), deforme, parle: parleur === i };
+      });
+      const image = this.acteur.rendre(t, poses);
+      if (image) c.drawImage(image, 0, 0, this.L, this.H);
+      return;
+    }
+    // Sans WebGL : le premier dessin déformé en 2D, les amis simplement posés.
+    this.amis.forEach((a, k) => {
+      const p = this.posAmis[k] && this.projeter(this.posAmis[k]);
+      if (!p || p.cache) return;
+      const [lw, lh] = a.double.taillePx(p.taille);
+      c.save();
+      c.globalAlpha = Math.max(0, Math.min(1, p.alpha ?? 1));
+      c.translate(p.x * this.L, p.y * this.H);
+      c.rotate((p.rot || 0) + 0.06 * Math.sin(t * 4 + k));
+      c.scale(-p.sens, 1);
+      c.drawImage(a.sprite, -lw / 2, -lh / 2, lw, lh);
+      c.restore();
+    });
+    this.dessinerPersonnage(t, this.pos, parleur === 0);
+  }
 
   // Déclenche un bruitage une seule fois par valeur de n (un rebond, un passage…).
   signal(nom, n, effet, rappel) {
@@ -477,19 +534,6 @@ export class FilmLibre {
 
   dessinerPersonnage(t, p, parle) {
     const c = this.ctx;
-    if (this.acteur.ok) {
-      const [, lh] = this.taillePx(p.taille);
-      // En 3D : les déformations du mouvement s'ajoutent (à moitié) à celles du corps.
-      const def = DEFORMATIONS[p.deforme];
-      const deforme = def ? (u, v) => { const [dx, dy] = def(u, v, t, p); return [dx * 0.5, dy * 0.5]; } : () => [0, 0];
-      const image = this.acteur.rendre(t, p, lh / this.H, deforme, parle);
-      if (!image) return;
-      c.save();
-      c.globalAlpha = Math.max(0, Math.min(1, p.alpha ?? 1));
-      c.drawImage(image, 0, 0, this.L, this.H);
-      c.restore();
-      return;
-    }
     p = this.projeter(p);
     if (p.cache) return;
     const [lw, lh] = this.taillePx(p.taille);
@@ -564,13 +608,18 @@ export class FilmLibre {
     const compagnons = sc.compagnons || [];
     if (t > 2.5) dessinerCompagnons(c, t, this, compagnons, "derriere");
     const replique = this.repliques.find((r) => t >= r.t && t < r.t + r.duree);
-    if (t > 2.5) this.dessinerPersonnage(t, this.pos, !!replique);
+    this.posAmis = this.amis.map((a, k) => this.posAmi(k, t));
+    if (t > 2.5) this.dessinerActeurs(t, replique ? replique.qui || 0 : -1);
     if (t > 2.5) dessinerCompagnons(c, t, this, compagnons, "devant");
     if (sc.devant) sc.devant(c, t, this);
-    this.repliques.forEach((r, k) => { if (t >= r.t) this.signal("replique" + k, 1, null, () => this.voix && this.voix.dire(r.texte)); });
+    this.repliques.forEach((r, k) => {
+      if (t >= r.t) this.signal("replique" + k, 1, null, () => this.voix && this.voix.dire(r.texte, { ami: !!r.qui }));
+    });
     if (replique) {
-      const e = this.projeter(this.pos);
-      if (!e.cache) this.parole(replique.texte, e.x, e.y - this.hauteurRel(e.taille) / 2);
+      const qui = replique.qui || 0, f = qui ? this.amis[qui - 1].double : this;
+      const p = qui ? this.posAmis[qui - 1] : this.pos;
+      const e = p && this.projeter(p);
+      if (e && !e.cache) this.parole(replique.texte, e.x, e.y - f.hauteurRel(e.taille) / 2);
     }
     if (t < 3.5) this.carton([["Le dessin animé de", 58], [this.prenom, 100], [`${sc.emoji} ${sc.nom}`, 52]], t < 2.5 ? 1 : 1 - (t - 2.5));
     if (t > 19.6) this.carton([["Fin", 140], [`Un film de ${this.prenom}`, 56]], Math.min(1, (t - 19.6) * 1.5));
