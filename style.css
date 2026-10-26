@@ -161,3 +161,5 @@ label.petit { display: block; text-align: center; cursor: pointer; }
 .feuille .actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .feuille .actions > * { flex: 1; padding: 10px 6px; font-size: 1rem; border-radius: 14px; }
 .feuille .actions .gros { box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2); }
+.liste-feuilles .groupe { grid-column: 1 / -1; margin: 12px 0 0; font-size: 1.5rem; text-align: center; }
+.feuille .type { font-size: 0.95rem; font-weight: bold; color: #c2410c; margin-top: -6px; }

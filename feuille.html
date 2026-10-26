@@ -35,7 +35,9 @@
   <script type="module">
     import { FEUILLES, feuilleSVG } from "./js/catalogue.js";
     const id = new URLSearchParams(location.search).get("f");
-    const choix = id === "tout" ? FEUILLES : FEUILLES.filter((f) => f.id === id);
+    // ?f=tout, ?f=un-nom, ou ?g=monstres (toute une famille).
+    const groupe = new URLSearchParams(location.search).get("g");
+    const choix = groupe ? FEUILLES.filter((f) => f.groupe === groupe) : id === "tout" ? FEUILLES : FEUILLES.filter((f) => f.id === id);
     document.getElementById("feuilles").innerHTML = (choix.length ? choix : FEUILLES).map(feuilleSVG).join("");
     document.getElementById("imprimer").addEventListener("click", () => window.print());
   </script>

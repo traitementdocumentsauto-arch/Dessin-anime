@@ -4,11 +4,16 @@
 // { d } = forme ; { d, trait: true } = simple trait ; { d, plein: true } = rempli de noir.
 
 const rond = (cx, cy, r) => `M${cx - r} ${cy} A${r} ${r} 0 1 0 ${cx + r} ${cy} A${r} ${r} 0 1 0 ${cx - r} ${cy} Z`;
+// Feuille d'arbre de (bx, by) jusqu'à la pointe (tx, ty), largeur l.
+const feuilleArbre = (bx, by, tx, ty, l) => {
+  const mx = (bx + tx) / 2, my = (by + ty) / 2, n = Math.hypot(tx - bx, ty - by), px = (-(ty - by) / n) * l, py = ((tx - bx) / n) * l;
+  return `M${bx} ${by} Q${mx + px} ${my + py} ${tx} ${ty} Q${mx - px} ${my - py} ${bx} ${by} Z`;
+};
 const oeil = (x, y, r = 6) => [{ d: rond(x, y, r) }, { d: rond(x - r * 0.25, y, r * 0.45), plein: true }];
 
 export const FEUILLES = [
   {
-    id: "poisson", titre: "Le poisson", sujet: "poisson", nom: "le poisson", corps: "profil",
+    id: "poisson", groupe: "mer", titre: "Le poisson", sujet: "poisson", nom: "le poisson", corps: "profil",
     formes: [
       { d: "M146 70 L192 32 C182 55, 182 85, 192 108 Z" },
       { d: "M68 36 C78 6, 114 6, 126 44 Z" },
@@ -23,7 +28,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "raie", titre: "La raie", sujet: "raie", nom: "la raie", corps: "plat",
+    id: "raie", groupe: "mer", titre: "La raie", sujet: "raie", nom: "la raie", corps: "plat",
     formes: [
       { d: "M148 66 C172 64, 188 60, 198 52 C192 66, 176 74, 148 76 Z" },
       { d: "M12 70 C38 48, 60 18, 110 6 C112 38, 126 54, 152 62 C166 66, 166 74, 152 78 C126 86, 112 102, 110 134 C60 122, 38 92, 12 70 Z" },
@@ -33,7 +38,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "requin", titre: "Le requin", sujet: "requin", nom: "le requin", corps: "profil",
+    id: "requin", groupe: "mer", titre: "Le requin", sujet: "requin", nom: "le requin", corps: "profil",
     formes: [
       { d: "M78 46 L96 8 L114 48 Z" },
       { d: "M62 86 L48 122 L86 92 Z" },
@@ -46,7 +51,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "dauphin", titre: "Le dauphin", sujet: "dauphin", nom: "le dauphin", corps: "profil",
+    id: "dauphin", groupe: "mer", titre: "Le dauphin", sujet: "dauphin", nom: "le dauphin", corps: "profil",
     formes: [
       { d: "M94 40 C100 18, 112 10, 128 8 C120 24, 120 36, 128 46 Z" },
       { d: "M80 94 C78 112, 86 124, 100 130 C100 114, 102 104, 108 96 Z" },
@@ -57,7 +62,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "baleine", titre: "La baleine", sujet: "baleine", nom: "la baleine", corps: "profil",
+    id: "baleine", groupe: "mer", titre: "La baleine", sujet: "baleine", nom: "la baleine", corps: "profil",
     formes: [
       { d: "M54 32 C50 18, 42 12, 34 4 M54 32 C55 18, 58 10, 62 2 M54 32 C60 18, 70 12, 78 6", trait: true },
       { d: "M72 102 C66 122, 76 134, 94 138 C92 122, 94 112, 100 106 Z" },
@@ -69,7 +74,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "pieuvre", titre: "La pieuvre", sujet: "pieuvre", nom: "la pieuvre", corps: "profil",
+    id: "pieuvre", groupe: "mer", titre: "La pieuvre", sujet: "pieuvre", nom: "la pieuvre", corps: "profil",
     formes: [
       ...[46, 64, 82, 100, 118, 136].map((x) => ({ d: `M${x} 66 C${x - 12} 92, ${x + 14} 108, ${x - 6} 132 C${x + 4} 138, ${x + 16} 130, ${x + 12} 118 C${x + 6} 104, ${x + 22} 90, ${x + 16} 66 Z` })),
       { d: "M44 74 C30 6, 170 6, 156 74 Z" },
@@ -79,7 +84,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "tortue", titre: "La tortue", sujet: "tortue", nom: "la tortue", corps: "plat",
+    id: "tortue", groupe: "mer", titre: "La tortue", sujet: "tortue", nom: "la tortue", corps: "plat",
     formes: [
       { d: "M78 40 C64 16, 44 8, 30 12 C38 28, 56 42, 72 50 Z" },
       { d: "M78 100 C64 124, 44 132, 30 128 C38 112, 56 98, 72 90 Z" },
@@ -95,7 +100,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "dinosaure", titre: "Le dinosaure", sujet: "dinosaure", nom: "le dinosaure", corps: "profil",
+    id: "dinosaure", groupe: "animaux", titre: "Le dinosaure", sujet: "dinosaure", nom: "le dinosaure", corps: "profil",
     formes: [
       ...[[84, 56], [100, 50], [116, 50], [132, 54], [148, 62]].map(([x, y]) => ({ d: `M${x - 7} ${y + 4} L${x} ${y - 12} L${x + 7} ${y + 4} Z` })),
       { d: "M92 100 L90 132 L108 132 L110 100 Z" },
@@ -109,7 +114,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "dragon", titre: "Le dragon", sujet: "dragon", nom: "le dragon", corps: "profil",
+    id: "dragon", groupe: "animaux", titre: "Le dragon", sujet: "dragon", nom: "le dragon", corps: "profil",
     formes: [
       { d: "M98 58 C90 18, 122 2, 150 6 C140 16, 152 26, 140 34 C154 38, 148 50, 134 54 C142 62, 128 70, 112 66 Z" },
       { d: "M104 34 L128 18 M108 46 L140 36", trait: true },
@@ -125,7 +130,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "chat", titre: "Le chat", sujet: "chat", nom: "le chat", corps: "profil",
+    id: "chat", groupe: "animaux", titre: "Le chat", sujet: "chat", nom: "le chat", corps: "profil",
     formes: [
       { d: "M148 82 C170 72, 180 50, 172 28 C186 38, 192 62, 180 82 C172 94, 160 98, 148 96 Z" },
       { d: "M62 104 L60 132 L76 132 L78 104 Z" }, { d: "M128 104 L128 132 L144 132 L144 104 Z" },
@@ -140,7 +145,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "chien", titre: "Le chien", sujet: "chien", nom: "le chien", corps: "profil",
+    id: "chien", groupe: "animaux", titre: "Le chien", sujet: "chien", nom: "le chien", corps: "profil",
     formes: [
       { d: "M150 76 C164 66, 174 52, 176 38 C184 50, 180 70, 166 84 Z" },
       { d: "M62 104 L60 132 L78 132 L80 104 Z" }, { d: "M128 104 L128 132 L146 132 L146 104 Z" },
@@ -155,7 +160,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "lapin", titre: "Le lapin", sujet: "lapin", nom: "le lapin", corps: "profil",
+    id: "lapin", groupe: "animaux", titre: "Le lapin", sujet: "lapin", nom: "le lapin", corps: "profil",
     formes: [
       { d: rond(156, 82, 12) },
       { d: "M70 110 C60 112, 58 124, 74 126 L96 126 C100 118, 92 110, 82 108 Z" },
@@ -171,7 +176,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "oiseau", titre: "L'oiseau", sujet: "oiseau", nom: "l'oiseau", corps: "profil",
+    id: "oiseau", groupe: "animaux", titre: "L'oiseau", sujet: "oiseau", nom: "l'oiseau", corps: "profil",
     formes: [
       { d: "M140 70 L190 46 L186 66 L196 78 L184 86 L188 104 L140 84 Z" },
       { d: "M82 108 L78 132 M78 132 L68 136 M78 132 L84 138 M106 108 L104 132 M104 132 L94 136 M104 132 L110 138", trait: true },
@@ -184,7 +189,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "papillon", titre: "Le papillon", sujet: "papillon", nom: "le papillon", corps: "plat",
+    id: "papillon", groupe: "animaux", titre: "Le papillon", sujet: "papillon", nom: "le papillon", corps: "plat",
     formes: [
       { d: "M100 64 C80 20, 40 0, 20 18 C4 34, 30 62, 98 70 Z" },
       { d: "M100 64 C120 20, 160 0, 180 18 C196 34, 170 62, 102 70 Z" },
@@ -198,7 +203,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "fusee", titre: "La fusée", sujet: "fusee", nom: "la fusée", corps: "profil",
+    id: "fusee", groupe: "autres", titre: "La fusée", sujet: "fusee", nom: "la fusée", corps: "profil",
     formes: [
       { d: "M160 52 C178 50, 192 58, 198 70 C192 82, 178 90, 160 88 Z" },
       { d: "M164 58 C176 60, 184 64, 188 70 C184 76, 176 80, 164 82", trait: true },
@@ -210,7 +215,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "voiture", titre: "La voiture", sujet: "voiture", nom: "la voiture", corps: "profil",
+    id: "voiture", groupe: "autres", titre: "La voiture", sujet: "voiture", nom: "la voiture", corps: "profil",
     formes: [
       { d: "M6 96 C6 76, 16 70, 40 68 L62 40 C70 30, 80 28, 92 28 L134 28 C146 28, 154 34, 162 46 L176 68 C190 70, 196 80, 196 96 L196 108 L6 108 Z" },
       { d: "M70 64 L84 40 L108 40 L108 64 Z" }, { d: "M118 64 L118 40 L142 40 L154 64 Z" },
@@ -220,7 +225,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "robot", titre: "Le robot", sujet: "robot", nom: "le robot", corps: "profil",
+    id: "robot", groupe: "autres", titre: "Le robot", sujet: "robot", nom: "le robot", corps: "profil",
     formes: [
       { d: "M100 10 L100 22", trait: true }, { d: rond(100, 8, 5) },
       { d: "M48 48 L28 92 L40 96 L58 60 Z" }, { d: "M152 48 L172 92 L160 96 L142 60 Z" },
@@ -234,7 +239,7 @@ export const FEUILLES = [
     ],
   },
   {
-    id: "monstre", titre: "Le monstre", sujet: "monstre", nom: "le monstre", corps: "profil",
+    id: "monstre", groupe: "autres", titre: "Le monstre", sujet: "monstre", nom: "le monstre", corps: "profil",
     formes: [
       { d: "M62 30 L52 4 L78 24 Z" }, { d: "M138 30 L148 4 L122 24 Z" },
       { d: "M56 116 L52 136 L74 136 L76 118 Z" }, { d: "M124 118 L126 136 L148 136 L144 116 Z" },
@@ -244,6 +249,187 @@ export const FEUILLES = [
       { d: "M68 84 Q100 112 132 84 Z" },
       { d: "M80 88 L86 98 L92 92 L100 102 L108 92 L114 98 L120 88", trait: true },
       { d: rond(70, 108, 5) }, { d: rond(132, 104, 6) },
+    ],
+  },
+
+  // ---------- Monstres de poche (inventés) ----------
+  {
+    id: "pyroto", groupe: "monstres", titre: "Pyroto", type: "Feu", sujet: "pokemon", nom: "Pyroto", phrase: "Attaque Flamme Rigolote ! Fshhh !",
+    formes: [
+      { d: "M140 80 C160 70, 170 50, 160 30 C175 38, 180 30, 178 18 C192 34, 198 56, 188 76 C196 74, 200 70, 198 64 C200 86, 182 104, 150 100 Z" },
+      { d: "M158 88 C172 80, 180 66, 176 50", trait: true },
+      { d: "M70 100 L66 130 L82 130 L84 104 Z" }, { d: "M118 100 L118 130 L134 130 L132 100 Z" },
+      { d: "M60 84 C58 62, 130 56, 146 80 C152 100, 138 110, 120 110 L80 110 C66 108, 60 98, 60 84 Z" },
+      { d: "M64 86 L72 96 L78 86 L86 96 L92 86", trait: true },
+      { d: "M26 32 L20 2 L46 22 Z" }, { d: "M52 24 L64 0 L72 30 Z" },
+      { d: "M28 24 L26 10 M58 18 L63 8", trait: true },
+      { d: "M6 60 C6 36, 30 22, 52 26 C76 30, 82 56, 70 72 C60 84, 28 84, 6 60 Z" },
+      ...oeil(32, 46, 7),
+      { d: rond(8, 59, 4), plein: true },
+      { d: "M12 68 Q22 74 32 68", trait: true },
+      { d: "M52 56 L60 50 L58 62 Z" },
+    ],
+  },
+  {
+    id: "aquabulle", groupe: "monstres", titre: "Aquabulle", type: "Eau", sujet: "pokemon", nom: "Aquabulle", phrase: "Attaque Jet de Bulles ! Blub blub !",
+    formes: [
+      { d: "M140 70 C165 56, 186 60, 198 72 C186 84, 165 88, 140 82 Z" },
+      { d: "M150 76 C166 72, 180 72, 192 72", trait: true },
+      { d: "M72 84 C66 108, 76 118, 86 110 L88 86 Z" }, { d: "M118 84 C114 108, 124 118, 134 110 L134 84 Z" },
+      { d: "M52 40 C60 18, 76 16, 82 24 C72 30, 66 36, 62 46 Z" },
+      { d: "M60 50 C76 38, 92 40, 96 48 C86 50, 76 56, 66 60 Z" },
+      { d: "M58 84 C72 100, 88 100, 92 94 C82 90, 72 84, 66 78 Z" },
+      { d: "M50 74 C50 54, 140 54, 150 74 C150 94, 50 98, 50 74 Z" },
+      { d: rond(40, 66, 30) },
+      ...oeil(28, 58, 7),
+      { d: "M14 76 Q28 86 42 78", trait: true },
+      { d: rond(100, 66, 5) }, { d: rond(118, 78, 4) }, { d: rond(84, 82, 4) },
+    ],
+  },
+  {
+    id: "feuillon", groupe: "monstres", titre: "Feuillon", type: "Plante", sujet: "pokemon", nom: "Feuillon", phrase: "Attaque Tempête de Feuilles ! Fiou !",
+    formes: [
+      ...[-165, -140, -115, -90, -65, -40, -15].map((a) => {
+        const r = (a * Math.PI) / 180, c = Math.cos(r), si = Math.sin(r);
+        return { d: feuilleArbre(104 + 34 * c, 92 + 28 * si, 104 + 84 * c, 92 + 70 * si, 12) };
+      }),
+      { d: "M62 112 L60 130 L78 130 L80 114 Z" }, { d: "M126 114 L126 130 L144 130 L144 112 Z" },
+      { d: "M40 92 C40 52, 166 44, 168 92 C168 114, 152 120, 132 120 L70 120 C50 120, 40 110, 40 92 Z" },
+      { d: "M42 88 C30 84, 16 88, 8 98 C14 108, 32 110, 46 104 Z" },
+      { d: rond(9, 97, 5), plein: true },
+      ...oeil(40, 82, 6),
+      { d: "M20 106 Q28 110 36 106", trait: true },
+      { d: "M90 96 Q104 104 118 96", trait: true },
+    ],
+  },
+  {
+    id: "volteo", groupe: "monstres", titre: "Voltéo", type: "Électrique", sujet: "pokemon", nom: "Voltéo", phrase: "Attaque Éclair Zigzag ! Bzzzt !",
+    formes: [
+      { d: "M144 70 L178 54 L168 72 L198 66 L166 94 L172 80 L144 88 Z" },
+      { d: "M80 120 L76 136 M76 136 L66 139 M76 136 L84 139 M112 120 L112 136 M112 136 L102 139 M112 136 L120 139", trait: true },
+      { d: "M88 36 L78 8 L96 22 L104 0 L114 32 Z" },
+      { d: rond(100, 80, 48) },
+      { d: "M108 80 C128 64, 150 72, 148 92 C134 102, 116 98, 108 80 Z" },
+      { d: "M118 84 L126 78 L130 88 L140 82", trait: true },
+      { d: "M56 72 L34 80 L56 88 Z" },
+      ...oeil(72, 64, 8),
+      { d: rond(80, 94, 7) },
+      { d: "M70 112 L80 104 L90 114 L100 104 L110 114 L120 104", trait: true },
+    ],
+  },
+  {
+    id: "givrou", groupe: "monstres", titre: "Givrou", type: "Glace", sujet: "pokemon", nom: "Givrou", phrase: "Attaque Souffle Glacé ! Brrr !",
+    formes: [
+      { d: "M80 44 L84 14 L100 42 Z" }, { d: "M100 40 L112 4 L124 42 Z" }, { d: "M124 46 L144 16 L148 54 Z" },
+      { d: "M112 12 L112 36 M86 22 L90 38 M140 26 L142 44", trait: true },
+      { d: "M68 104 L66 130 L84 130 L86 106 Z" }, { d: "M124 106 L124 130 L142 130 L142 104 Z" },
+      { d: "M50 86 C46 54, 142 40, 162 80 C170 104, 152 116, 132 116 L76 116 C58 114, 50 102, 50 86 Z" },
+      { d: rond(24, 40, 9) }, { d: rond(56, 36, 9) },
+      { d: rond(42, 64, 28) },
+      { d: "M12 74 C12 62, 34 62, 34 74 C34 86, 12 86, 12 74 Z" },
+      { d: rond(15, 71, 4), plein: true },
+      ...oeil(40, 56, 6),
+      { d: "M108 74 L108 100 M95 87 L121 87 M99 78 L117 96 M117 78 L99 96", trait: true },
+    ],
+  },
+  {
+    id: "fantomou", groupe: "monstres", titre: "Fantomou", type: "Fantôme", sujet: "pokemon", nom: "Fantomou", phrase: "Attaque Bouh Mystère ! Hou hou !",
+    formes: [
+      { d: "M30 70 C30 20, 130 10, 150 50 C160 70, 176 88, 196 94 C180 104, 164 104, 150 98 C140 120, 130 110, 122 124 C112 110, 104 126, 94 116 C84 128, 74 114, 64 124 C56 112, 40 116, 36 104 C32 96, 30 84, 30 70 Z" },
+      { d: "M56 86 C42 92, 30 102, 24 112 C40 110, 54 102, 62 94 Z" },
+      ...oeil(58, 50, 10), ...oeil(88, 48, 10),
+      { d: "M62 72 Q74 92 86 72 Z", plein: true },
+      { d: "M112 62 C122 52, 134 60, 128 70 C122 78, 110 72, 116 64", trait: true },
+    ],
+  },
+  {
+    id: "drakeo", groupe: "monstres", titre: "Drakéo", type: "Dragon", sujet: "pokemon", nom: "Drakéo", phrase: "Attaque Rugissement du Dragon ! Grrraou !",
+    formes: [
+      { d: "M100 58 C100 30, 120 16, 138 18 C128 30, 140 36, 128 44 C138 50, 128 60, 112 62 Z" },
+      { d: "M140 92 C160 92, 176 84, 188 70 L198 76 L190 92 L182 86 C170 102, 156 108, 140 108 Z" },
+      { d: "M74 104 L72 130 L90 130 L92 106 Z" }, { d: "M120 104 L120 130 L138 130 L138 104 Z" },
+      { d: "M56 90 C52 60, 132 52, 148 86 C154 106, 140 114, 122 114 L80 114 C64 112, 58 102, 56 90 Z" },
+      { d: "M70 98 C90 104, 110 104, 130 98 M68 88 C90 94, 112 94, 134 88", trait: true },
+      { d: "M44 20 L54 0 L62 24 Z" }, { d: "M28 20 L28 4 L40 20 Z" },
+      { d: "M8 52 C8 26, 40 14, 64 22 C86 30, 88 60, 72 74 C56 86, 20 84, 8 70 Z" },
+      ...oeil(40, 44, 8),
+      { d: rond(14, 52, 2.5), plein: true },
+      { d: "M14 64 Q28 72 40 66", trait: true },
+      { d: "M24 67 L27 72 L30 68", trait: true },
+    ],
+  },
+  {
+    id: "rocaille", groupe: "monstres", titre: "Rocaille", type: "Roche", sujet: "pokemon", nom: "Rocaille", phrase: "Attaque Avalanche de Cailloux ! Boum !",
+    formes: [
+      { d: "M38 80 L10 70 L4 90 L30 98 Z" }, { d: "M166 80 L192 74 L196 96 L168 100 Z" },
+      { d: "M60 118 L56 134 L84 134 L84 120 Z" }, { d: "M118 120 L118 134 L146 134 L142 118 Z" },
+      { d: "M86 24 L96 8 L110 26 Z" },
+      { d: "M40 120 L30 80 L50 40 L90 22 L140 30 L168 64 L170 104 L150 124 Z" },
+      { d: "M120 40 L128 58 L122 70 M150 70 L142 86 L150 98 M100 104 L110 114", trait: true },
+      ...oeil(66, 62, 7), ...oeil(94, 60, 7),
+      { d: "M56 50 L74 54 M104 48 L86 53", trait: true },
+      { d: "M66 84 Q80 92 94 84", trait: true },
+    ],
+  },
+  {
+    id: "plumio", groupe: "monstres", titre: "Plumio", type: "Vol", sujet: "pokemon", nom: "Plumio", phrase: "Attaque Tornade de Plumes ! Fwouuu !",
+    formes: [
+      { d: "M150 76 L196 62 L188 78 L198 90 L150 90 Z" },
+      { d: "M84 108 L80 126 M80 126 L72 130 M80 126 L86 132 M110 108 L110 126 M110 126 L102 130 M110 126 L116 132", trait: true },
+      { d: "M44 80 C44 54, 120 50, 156 80 C150 104, 60 112, 44 80 Z" },
+      { d: "M80 62 C80 22, 120 2, 160 8 C146 20, 150 32, 140 40 C150 46, 142 58, 120 64 Z" },
+      { d: "M96 56 C104 38, 120 26, 140 20 M104 60 C116 48, 128 42, 140 40", trait: true },
+      { d: "M28 46 L20 24 L40 40 Z" }, { d: "M48 40 L54 20 L60 42 Z" },
+      { d: rond(40, 66, 24) },
+      { d: rond(32, 62, 11) },
+      ...oeil(32, 62, 7),
+      { d: "M18 68 L4 74 L18 78 Z" },
+    ],
+  },
+  {
+    id: "psylou", groupe: "monstres", titre: "Psylou", type: "Psy", sujet: "pokemon", nom: "Psylou", phrase: "Attaque Ondes Magiques ! Wouiii !",
+    formes: [
+      { d: "M140 80 C168 78, 184 62, 182 46 C180 34, 166 30, 160 38 C170 40, 172 50, 168 58 C160 70, 150 74, 140 74 Z" },
+      { d: rond(160, 34, 8) },
+      { d: rond(80, 112, 9) }, { d: rond(120, 112, 9) },
+      { d: "M60 84 C58 64, 130 58, 146 80 C152 98, 138 108, 118 108 L82 108 C66 106, 60 96, 60 84 Z" },
+      { d: "M22 38 L12 6 L42 28 Z" }, { d: "M54 28 L66 0 L74 34 Z" },
+      { d: rond(44, 60, 30) },
+      { d: "M44 30 L51 40 L44 50 L37 40 Z" },
+      ...oeil(32, 62, 9), ...oeil(58, 60, 9),
+      { d: "M38 76 Q44 82 50 76", trait: true },
+      { d: "M18 70 L2 66 M18 76 L2 80", trait: true },
+    ],
+  },
+  {
+    id: "lapaillette", groupe: "monstres", titre: "Lapaillette", type: "Fée", sujet: "pokemon", nom: "Lapaillette", phrase: "Attaque Poussière d'Étoiles ! Pling !",
+    formes: [
+      { d: "M90 62 C70 22, 110 0, 132 20 C142 32, 122 52, 96 66 Z" },
+      { d: "M98 72 C112 52, 142 52, 148 68 C152 82, 126 86, 100 78 Z" },
+      { d: rond(112, 30, 6) }, { d: rond(130, 70, 5) },
+      { d: "M150 82 L156 70 L160 82 L172 84 L162 90 L166 102 L156 94 L146 100 L150 90 L140 84 Z" },
+      { d: "M70 110 C60 112, 58 124, 74 126 L96 126 C100 118, 92 110, 82 108 Z" },
+      { d: "M124 108 C114 110, 110 124, 128 126 L150 126 C154 116, 144 106, 134 106 Z" },
+      { d: "M58 86 C56 60, 140 58, 152 86 C156 106, 142 116, 120 116 L84 116 C66 114, 58 102, 58 86 Z" },
+      { d: "M30 40 C22 18, 24 2, 34 2 C44 4, 46 20, 44 42 Z" },
+      { d: "M46 42 C46 22, 56 6, 66 10 C74 14, 66 30, 58 46 Z" },
+      { d: rond(42, 64, 24) },
+      ...oeil(32, 60, 6),
+      { d: rond(20, 70, 4), plein: true },
+      { d: "M20 76 Q26 82 32 77", trait: true },
+    ],
+  },
+  {
+    id: "sablox", groupe: "monstres", titre: "Sablox", type: "Sol", sujet: "pokemon", nom: "Sablox", phrase: "Attaque Tremblement Tout Doux ! Brrroum !",
+    formes: [
+      { d: "M150 92 L196 104 L150 108 Z" },
+      { d: "M64 94 L62 120 L78 120 L80 96 Z" }, { d: "M130 96 L130 120 L146 120 L146 94 Z" },
+      { d: "M48 98 C48 48, 152 42, 160 98 Z" },
+      { d: "M72 98 C72 66, 80 54, 90 50 M96 98 C96 62, 100 50, 106 48 M120 98 C122 64, 124 52, 128 50 M142 98 C144 72, 142 60, 148 58", trait: true },
+      { d: "M44 72 L48 56 L58 74 Z" },
+      { d: "M56 84 C42 70, 20 70, 6 84 C12 96, 30 100, 56 98 Z" },
+      ...oeil(32, 82, 5),
+      { d: rond(7, 85, 4), plein: true },
     ],
   },
 ];
@@ -261,10 +447,15 @@ function dessinSVG(formes) {
 }
 
 // Feuille A4 (unités = mm) : titre en haut, le personnage en grand, une petite ligne en bas.
+export const GROUPES = [
+  ["monstres", "Monstres de poche"], ["mer", "Dans la mer"], ["animaux", "Animaux"], ["autres", "Et aussi"],
+];
+
 export function feuilleSVG(f) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" width="210mm" height="297mm">` +
     `<rect width="210" height="297" fill="#fff"/>` +
     `<text x="105" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="16">${echapper(f.titre)}</text>` +
+    (f.type ? `<text x="105" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold">Type ${echapper(f.type)}</text>` : "") +
     `<text x="105" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="5">Colorie-moi, puis prends-moi en photo dans « Mon dessin animé » !</text>` +
     `<g transform="translate(8 82) scale(0.97)">${dessinSVG(f.formes)}</g>` +
     `<text x="105" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="3.5" fill="#888">Mon dessin animé · ${echapper(f.titre)}</text>` +

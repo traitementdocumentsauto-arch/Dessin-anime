@@ -6,7 +6,7 @@ import { SCENES } from "./scenes.js";
 import { SUJETS, couleursDuDessin, repliques } from "./paroles.js";
 import { Voix } from "./voix.js";
 import { CORPS_PLATS } from "./acteur3d.js";
-import { FEUILLES, vignetteSVG, urlImage } from "./catalogue.js";
+import { FEUILLES, GROUPES, vignetteSVG, urlImage } from "./catalogue.js";
 import * as galerie from "./galerie.js";
 import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
@@ -92,7 +92,7 @@ async function dessinChoisi(fichier) {
     // Feuille du catalogue : on sait déjà ce que c'est.
     const f = etat.feuille;
     etat.feuille = null;
-    reglerInfos(f ? { sujet: f.sujet, nom: f.nom } : { sujet: null, nom: "", phrase: "" });
+    reglerInfos(f ? { sujet: f.sujet, nom: f.nom, phrase: f.phrase || "" } : { sujet: null, nom: "", phrase: "" });
     etat.idGalerie = null;
     montrer("apercu");
     dessinerApercu();
@@ -125,7 +125,7 @@ for (const sc of SCENES) {
 
 // ---------- Catalogue de feuilles à colorier ----------
 
-function carteFeuille(titre, image, lienImprimer, photo) {
+function carteFeuille(titre, image, lienImprimer, photo, type) {
   const carte = document.createElement("div");
   carte.className = "feuille";
   const img = document.createElement("img");
@@ -142,20 +142,38 @@ function carteFeuille(titre, image, lienImprimer, photo) {
   imprimer.textContent = "🖨️ Imprimer";
   imprimer.setAttribute("aria-label", `Imprimer ${titre}`);
   actions.append(imprimer, photo);
-  carte.append(img, nom, actions);
+  carte.append(img, nom);
+  if (type) {
+    const t = document.createElement("span");
+    t.className = "type";
+    t.textContent = `Type ${type}`;
+    carte.append(t);
+  }
+  carte.append(actions);
   return carte;
 }
 
 (function remplirCatalogue() {
   const liste = $("liste-feuilles");
-  for (const f of FEUILLES) {
+  const titreGroupe = (texte) => {
+    const h = document.createElement("h3");
+    h.className = "groupe";
+    h.textContent = texte;
+    liste.append(h);
+  };
+  const feuilles = GROUPES.flatMap(([id, nomGroupe]) => {
+    const du = FEUILLES.filter((f) => f.groupe === id);
+    return du.length ? [{ groupe: nomGroupe }, ...du] : [];
+  });
+  for (const f of feuilles) {
+    if (f.groupe && !f.id) { titreGroupe(f.groupe); continue; }
     const photo = document.createElement("button");
     photo.className = "gros vert";
     photo.dataset.action = "feuille-photo";
     photo.dataset.feuille = f.id;
     photo.textContent = "📷 Photo";
     photo.setAttribute("aria-label", `Photo de ${f.titre}`);
-    liste.append(carteFeuille(f.titre, urlImage(vignetteSVG(f)), `feuille.html?f=${f.id}`, photo));
+    liste.append(carteFeuille(f.titre, urlImage(vignetteSVG(f)), `feuille.html?f=${f.id}`, photo, f.type));
   }
   // La page « Au fond de la mer » (décor et personnages repérés par ses carrés noirs).
   const photo = document.createElement("label");
