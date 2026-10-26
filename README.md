@@ -10,6 +10,8 @@ Application web pour enfant (téléphone ou tablette, Android ou iPhone) :
 4. **Regarder le dessin animé** : le décor colorié ondule sous l'eau, le poisson et la pieuvre découpés dans le dessin nagent, parlent et dansent.
 5. **Garder** ses dessins animés : ils restent sur l'appareil (rien n'est envoyé sur Internet).
 
+**Feuilles à colorier** (bouton « 🖨️ Feuilles à colorier ») : un catalogue de 18 feuilles (`js/catalogue.js`, page d'impression `feuille.html`, une feuille ou « tout imprimer ») : poisson, raie, requin, dauphin, baleine, pieuvre, tortue, dinosaure, dragon, chat, chien, lapin, oiseau, papillon, fusée, voiture, robot, monstre, plus la page « Au fond de la mer ». Chaque feuille montre un grand personnage en traits épais, tourné vers la gauche. Le bouton 📷 sous une feuille ouvre l'appareil photo et l'application sait déjà ce que c'est (sujet et nom remplis).
+
 **N'importe quel dessin** (« Photo de mon dessin ») : sans page spéciale, l'application découpe le dessin sur la photo (tout ce qui n'est pas le papier, en tenant compte d'une lumière jaune ou d'une ombre), on le tourne pour qu'il regarde vers la gauche, puis on **choisit son film** (ou « Surprise ! ») :
 
 | Film | Le dessin… | Musique et bruitages |
@@ -42,6 +44,7 @@ Les boutons photo ouvrent directement l'appareil photo (`capture`) ; « Choisir 
 - `js/anim.js` : le dessin animé et les sons (fabriqués sur place).
 - `js/libre.js` : « n'importe quel dessin » (découpe sur la photo, façons de bouger, film).
 - `js/scenes.js` : les 8 films (décor, animations, musique, phrase).
+- `js/catalogue.js` : les feuilles à colorier.
 - `js/compagnons.js` : les compagnons (dessins et trajets).
 - `js/acteur3d.js` : le dessin en 3D (three.js).
 - `js/paroles.js` : sujets du dessin, couleurs repérées, répliques du film.

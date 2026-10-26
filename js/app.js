@@ -6,6 +6,7 @@ import { SCENES } from "./scenes.js";
 import { SUJETS, couleursDuDessin, repliques } from "./paroles.js";
 import { Voix } from "./voix.js";
 import { CORPS_PLATS } from "./acteur3d.js";
+import { FEUILLES, vignetteSVG, urlImage } from "./catalogue.js";
 import * as galerie from "./galerie.js";
 import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
@@ -24,6 +25,7 @@ $("prenom").addEventListener("input", () => {
 });
 
 function montrer(id) {
+  if (id === "accueil") etat.feuille = null;
   if (id !== "film" && etat.film) { etat.film.arreter(); etat.film = null; }
   document.querySelectorAll(".ecran").forEach((e) => e.classList.toggle("actif", e.id === id));
 }
@@ -87,7 +89,10 @@ async function dessinChoisi(fichier) {
     if (!sprite) { message("Je ne vois pas de dessin sur cette photo. Essaie avec la feuille bien à plat !"); return; }
     // Une photo en hauteur d'un dessin en largeur : on le met d'emblée en largeur.
     etat.sprite = sprite.height > sprite.width * 1.15 ? tournerSprite(sprite) : sprite;
-    reglerInfos({ sujet: null, nom: "", phrase: "" });
+    // Feuille du catalogue : on sait déjà ce que c'est.
+    const f = etat.feuille;
+    etat.feuille = null;
+    reglerInfos(f ? { sujet: f.sujet, nom: f.nom } : { sujet: null, nom: "", phrase: "" });
     etat.idGalerie = null;
     montrer("apercu");
     dessinerApercu();
@@ -117,6 +122,49 @@ for (const sc of SCENES) {
   b.append(emoji, nom);
   listeFilms.append(b);
 }
+
+// ---------- Catalogue de feuilles à colorier ----------
+
+function carteFeuille(titre, image, lienImprimer, photo) {
+  const carte = document.createElement("div");
+  carte.className = "feuille";
+  const img = document.createElement("img");
+  img.src = image;
+  img.alt = titre;
+  const nom = document.createElement("span");
+  nom.className = "titre";
+  nom.textContent = titre;
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  const imprimer = document.createElement("a");
+  imprimer.className = "petit";
+  imprimer.href = lienImprimer;
+  imprimer.textContent = "🖨️ Imprimer";
+  imprimer.setAttribute("aria-label", `Imprimer ${titre}`);
+  actions.append(imprimer, photo);
+  carte.append(img, nom, actions);
+  return carte;
+}
+
+(function remplirCatalogue() {
+  const liste = $("liste-feuilles");
+  for (const f of FEUILLES) {
+    const photo = document.createElement("button");
+    photo.className = "gros vert";
+    photo.dataset.action = "feuille-photo";
+    photo.dataset.feuille = f.id;
+    photo.textContent = "📷 Photo";
+    photo.setAttribute("aria-label", `Photo de ${f.titre}`);
+    liste.append(carteFeuille(f.titre, urlImage(vignetteSVG(f)), `feuille.html?f=${f.id}`, photo));
+  }
+  // La page « Au fond de la mer » (décor et personnages repérés par ses carrés noirs).
+  const photo = document.createElement("label");
+  photo.className = "gros vert";
+  photo.htmlFor = "photo";
+  photo.textContent = "📷 Photo";
+  photo.setAttribute("aria-label", "Photo de la page Au fond de la mer");
+  liste.append(carteFeuille("Au fond de la mer (page entière)", "icone.svg", "imprimer.html", photo));
+})();
 
 // ---------- Ce que c'est (pour ses paroles) ----------
 
@@ -379,6 +427,12 @@ const actions = {
     lancerFilm(etat.page, etat.garde);
   },
   "autre-film": () => choisirFilm(etat.page, etat.garde),
+  catalogue: () => montrer("catalogue"),
+  "feuille-photo": (b) => {
+    etat.feuille = FEUILLES.find((f) => f.id === b.dataset.feuille) || null;
+    // Ouvre l'appareil photo pendant l'appui (sinon le téléphone refuse).
+    $("libre").click();
+  },
   ami: async (b) => {
     const id = Number(b.dataset.id);
     if (etat.amis.has(id)) etat.amis.delete(id);

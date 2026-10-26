@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feuilles à colorier</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #ddd; }
+    .barre { display: flex; gap: 12px; justify-content: center; padding: 16px; flex-wrap: wrap; }
+    .barre button, .barre a {
+      font: inherit; font-size: 1.1rem; padding: 12px 20px; border-radius: 14px; border: none;
+      background: #2fbf71; color: #fff; text-decoration: none; cursor: pointer;
+    }
+    .barre a { background: #fff; color: #12324a; }
+    .aide { text-align: center; margin: 0 16px 16px; color: #333; }
+    #feuilles { display: flex; flex-direction: column; align-items: center; gap: 16px; padding-bottom: 24px; }
+    #feuilles svg { width: min(100% - 32px, 210mm); height: auto; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,.2); }
+    @media print {
+      body { background: #fff; }
+      .barre, .aide { display: none; }
+      #feuilles { display: block; padding: 0; }
+      #feuilles svg { display: block; width: 210mm; height: 297mm; box-shadow: none; break-after: page; }
+      #feuilles svg:last-child { break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="barre">
+    <a href="index.html">Retour</a>
+    <button id="imprimer">🖨️ Imprimer</button>
+  </div>
+  <p class="aide">Imprimez en A4. Après le coloriage, prenez la feuille en photo depuis le catalogue de l'application.</p>
+  <div id="feuilles"></div>
+  <script type="module">
+    import { FEUILLES, feuilleSVG } from "./js/catalogue.js";
+    const id = new URLSearchParams(location.search).get("f");
+    const choix = id === "tout" ? FEUILLES : FEUILLES.filter((f) => f.id === id);
+    document.getElementById("feuilles").innerHTML = (choix.length ? choix : FEUILLES).map(feuilleSVG).join("");
+    document.getElementById("imprimer").addEventListener("click", () => window.print());
+  </script>
+</body>
+</html>

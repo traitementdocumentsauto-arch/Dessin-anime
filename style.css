@@ -148,3 +148,16 @@ label.petit { display: block; text-align: center; cursor: pointer; }
 }
 .ami img { max-width: 100%; max-height: 100%; }
 .ami[aria-pressed="true"] { border-color: var(--vert); background: #d9f7e6; box-shadow: 0 0 0 3px var(--vert); }
+
+.liste-feuilles {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; width: 100%; max-width: 1000px;
+}
+.feuille {
+  background: var(--surface); border-radius: 18px; padding: 10px; display: flex; flex-direction: column; align-items: center;
+  gap: 8px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12); min-width: 0;
+}
+.feuille img { width: 100%; aspect-ratio: 208 / 148; object-fit: contain; background: #fff; border-radius: 10px; }
+.feuille .titre { font-size: 1.15rem; font-weight: bold; text-align: center; }
+.feuille .actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.feuille .actions > * { flex: 1; padding: 10px 6px; font-size: 1rem; border-radius: 14px; }
+.feuille .actions .gros { box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2); }
