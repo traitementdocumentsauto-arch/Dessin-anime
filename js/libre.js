@@ -2,6 +2,7 @@
 // du papier), puis il nage dans une mer dessinée par l'application.
 
 import { Acteur3D } from "./acteur3d.js";
+import { dessinerCompagnons } from "./compagnons.js";
 
 const limiter = (v, a, b) => Math.max(a, Math.min(b, v));
 const etape = (t, a, b) => limiter((t - a) / (b - a), 0, 1);
@@ -558,9 +559,13 @@ export class FilmLibre {
     this.sons.avancer(t);
     c.drawImage(this.fond, 0, 0);
     this.pos = MOUVEMENTS[sc.mouvement](t, this);
+    this.posEcran = this.projeter(this.pos);
     if (sc.derriere) sc.derriere(c, t, this);
+    const compagnons = sc.compagnons || [];
+    if (t > 2.5) dessinerCompagnons(c, t, this, compagnons, "derriere");
     const replique = this.repliques.find((r) => t >= r.t && t < r.t + r.duree);
     if (t > 2.5) this.dessinerPersonnage(t, this.pos, !!replique);
+    if (t > 2.5) dessinerCompagnons(c, t, this, compagnons, "devant");
     if (sc.devant) sc.devant(c, t, this);
     this.repliques.forEach((r, k) => { if (t >= r.t) this.signal("replique" + k, 1, null, () => this.voix && this.voix.dire(r.texte)); });
     if (replique) {

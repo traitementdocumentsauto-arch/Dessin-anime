@@ -109,6 +109,14 @@ function particules(c, liste, dessin) {
 export const SCENES = [
   {
     id: "mer", nom: "Au fond de la mer", emoji: "🌊", mouvement: "nage", phrase: "Coucou {p} !",
+    compagnons: [
+      { dessin: "poisson", couleur: "#ff8a3d", trajet: "traverse", de: 1.15, a: -0.15, y: 0.22, debut: 3.5, duree: 8, taille: 60 },
+      { dessin: "poisson", couleur: "#ffd23f", trajet: "traverse", de: -0.15, a: 1.15, y: 0.72, debut: 6, duree: 9, taille: 48, phase: 1 },
+      { dessin: "poisson", couleur: "#c77dff", trajet: "traverse", de: 1.15, a: -0.15, y: 0.62, debut: 15, duree: 7, taille: 52, phase: 2 },
+      { dessin: "meduse", trajet: "monte", x: 0.14, de: 1.15, a: -0.25, debut: 2, duree: 18, taille: 70 },
+      { dessin: "tortue", trajet: "traverse", de: -0.2, a: 1.2, y: 0.18, debut: 12.5, duree: 9, taille: 70, ondule: 0.03 },
+      { dessin: "crabe", trajet: "cote", de: 1.1, a: -0.1, y: 0.87, debut: 2, duree: 19, taille: 50, plan: "devant" },
+    ],
     musique: { bpm: 80, base: 392, gamme: "penta", accords: [0, 3, 1, 2], melodie: "marimba", densite: 0.5, basse: "basse", graine: 5 },
     fond(g, L, H) {
       g.fillStyle = degrade(g, H, ["#7fd3f7", "#3a9fd8", "#1d5f9c"]);
@@ -163,6 +171,13 @@ export const SCENES = [
 
   {
     id: "espace", nom: "Dans l'espace", emoji: "🚀", mouvement: "flotte", phrase: "Bonjour les étoiles !",
+    compagnons: [
+      { dessin: "ovni", trajet: "traverse", de: -0.2, a: 1.2, y: 0.2, debut: 3.5, duree: 7, taille: 90, ondule: 0.04, penche: 0.12 },
+      { dessin: "fusee", trajet: "fusee", de: [-0.1, 0.9], a: [1.1, 0.05], debut: 8.5, duree: 4, taille: 80 },
+      { dessin: "etoile", trajet: "flotte", x: 0.12, y: 0.75, taille: 60 },
+      { dessin: "etoile", couleur: "#fff3a0", trajet: "flotte", x: 0.62, y: 0.12, taille: 40, phase: 2 },
+      { dessin: "ovni", couleur: "#ff9ff3", trajet: "traverse", de: 1.2, a: -0.2, y: 0.8, debut: 15.5, duree: 6, taille: 60 },
+    ],
     musique: { bpm: 70, base: 220, gamme: "mineur", accords: [0, 5, 3, 4], melodie: "nappe", densite: 0.35, basse: "basse", graine: 11, volume: 1.1 },
     fond(g, L, H, r) {
       g.fillStyle = degrade(g, H, ["#04061a", "#120f3d", "#2a1458"]);
@@ -218,6 +233,14 @@ export const SCENES = [
 
   {
     id: "ciel", nom: "Dans le ciel", emoji: "☁️", mouvement: "vol", phrase: "Je vole, {p} !",
+    compagnons: [
+      { dessin: "oiseau", trajet: "traverse", de: 1.15, a: -0.15, y: 0.18, debut: 4, duree: 7, taille: 50 },
+      { dessin: "oiseau", couleur: "#ffd23f", trajet: "traverse", de: 1.25, a: -0.05, y: 0.24, debut: 4.2, duree: 7, taille: 42, phase: 0.5 },
+      { dessin: "ballon", trajet: "monte", x: 0.85, de: 1.2, a: -0.3, debut: 2.5, duree: 15, taille: 55 },
+      { dessin: "ballon", couleur: "#4fc3ff", trajet: "monte", x: 0.12, de: 1.2, a: -0.3, debut: 8, duree: 13, taille: 45, phase: 1 },
+      { dessin: "papillon", trajet: "flotte", x: 0.25, y: 0.68, taille: 40 },
+      { dessin: "oiseau", couleur: "#ff6b6b", trajet: "traverse", de: -0.15, a: 1.15, y: 0.72, debut: 14, duree: 7, taille: 46 },
+    ],
     musique: { bpm: 96, base: 523.25, gamme: "majeur", accords: [0, 4, 5, 3], melodie: "flute", densite: 0.55, basse: "basse", graine: 7 },
     fond(g, L, H) {
       g.fillStyle = degrade(g, H, ["#6cc4ff", "#bfe6ff", "#f3fbff"]);
@@ -266,6 +289,13 @@ export const SCENES = [
 
   {
     id: "jungle", nom: "Dans la jungle", emoji: "🌴", mouvement: "saut", phrase: "Hop ! Hop ! Hop !",
+    compagnons: [
+      { dessin: "singe", trajet: "danse", x: 0.88, y: 0.74, taille: 70 },
+      { dessin: "oiseau", couleur: "#ff4d4d", trajet: "traverse", de: 1.15, a: -0.15, y: 0.2, debut: 5, duree: 6, taille: 55 },
+      { dessin: "oiseau", couleur: "#3ddc97", trajet: "traverse", de: -0.15, a: 1.15, y: 0.3, debut: 12, duree: 6, taille: 50 },
+      { dessin: "papillon", couleur: "#4fc3ff", trajet: "flotte", x: 0.3, y: 0.45, taille: 38 },
+      { dessin: "tortue", trajet: "traverse", de: -0.15, a: 1.15, y: 0.9, debut: 3, duree: 18, taille: 50, ondule: 0.005, plan: "devant" },
+    ],
     musique: { bpm: 116, base: 293.66, gamme: "penta", accords: [0, 2, 3, 1], melodie: "pizz", densite: 0.75, basse: "basse", batterie: { t: "x...x.x.", h: "..x...x." }, graine: 21 },
     fond(g, L, H, r) {
       g.fillStyle = degrade(g, H, ["#8be4ff", "#d9f8ff"]);
@@ -304,6 +334,12 @@ export const SCENES = [
 
   {
     id: "neige", nom: "Sur la neige", emoji: "❄️", mouvement: "glisse", phrase: "Youpi, ça glisse !",
+    compagnons: [
+      { dessin: "bonhommeNeige", trajet: "pose", x: 0.1, y: 0.33, taille: 70 },
+      { dessin: "pingouin", trajet: "pente", de: -0.15, a: 1.15, debut: 4, duree: 6, taille: 55, dy: 0.07 },
+      { dessin: "pingouin", trajet: "pente", de: -0.15, a: 1.15, debut: 4.7, duree: 6, taille: 45, dy: 0.057, phase: 1 },
+      { dessin: "pingouin", trajet: "pose", x: 0.9, y: 0.67, taille: 55, plan: "devant" },
+    ],
     musique: { bpm: 104, base: 587.33, gamme: "majeur", accords: [0, 3, 4, 0], melodie: "cloche", densite: 0.6, basse: "basse", batterie: { g: "x.x.x.x." }, graine: 13 },
     fond(g, L, H, r) {
       g.fillStyle = degrade(g, H, ["#1b2a5a", "#5b4f9a", "#f1b6c9"]);
@@ -335,6 +371,14 @@ export const SCENES = [
 
   {
     id: "fete", nom: "La grande fête", emoji: "🎉", mouvement: "danse", phrase: "On danse, {p} !",
+    compagnons: [
+      { dessin: "ours", trajet: "danse", x: 0.15, y: 0.7, taille: 75 },
+      { dessin: "ours", couleur: "#e0a3ff", trajet: "danse", x: 0.86, y: 0.7, taille: 75, phase: 0.5 },
+      { dessin: "note", trajet: "monte", x: 0.3, de: 1.1, a: -0.2, debut: 3, duree: 6, taille: 40 },
+      { dessin: "note", couleur: "#4cc9f0", trajet: "monte", x: 0.7, de: 1.1, a: -0.2, debut: 6, duree: 6, taille: 40 },
+      { dessin: "note", couleur: "#ffd23f", trajet: "monte", x: 0.45, de: 1.1, a: -0.2, debut: 11, duree: 6, taille: 40 },
+      { dessin: "ballon", couleur: "#3ddc97", trajet: "monte", x: 0.6, de: 1.2, a: -0.3, debut: 13, duree: 8, taille: 45 },
+    ],
     musique: { bpm: 124, base: 261.63, gamme: "mineur", accords: [0, 5, 2, 6], melodie: "carre", densite: 0.7, basse: "basse-synthe", batterie: { k: "x.x.x.x.", s: "..x...x.", h: ".x.x.x.x" }, graine: 17 },
     fond(g, L, H) {
       g.fillStyle = degrade(g, H, ["#12052b", "#2e0f57", "#4a1670"]);
@@ -389,6 +433,12 @@ export const SCENES = [
 
   {
     id: "chateau", nom: "Le château magique", emoji: "🏰", mouvement: "magie", phrase: "Abracadabra !",
+    compagnons: [
+      { dessin: "fee", trajet: "orbite", rayon: 0.25, vitesse: 1.3, debut: 3, taille: 45, plan: "devant" },
+      { dessin: "fee", trajet: "flotte", x: 0.85, y: 0.25, taille: 40, phase: 2 },
+      { dessin: "etoile", trajet: "flotte", x: 0.1, y: 0.45, taille: 40 },
+      { dessin: "papillon", couleur: "#9be7ff", trajet: "flotte", x: 0.35, y: 0.75, taille: 35 },
+    ],
     musique: { bpm: 76, base: 440, gamme: "mineur", accords: [0, 3, 5, 4], melodie: "orgue", densite: 0.5, basse: "basse", graine: 29 },
     fond(g, L, H, r) {
       g.fillStyle = degrade(g, H, ["#1d0b45", "#4b2a8a", "#8a7fd6"]);
@@ -460,6 +510,11 @@ export const SCENES = [
 
   {
     id: "volcan", nom: "Le volcan", emoji: "🌋", mouvement: "saut", phrase: "Ça chauffe !",
+    compagnons: [
+      { dessin: "dino", trajet: "saut", de: 1.15, a: -0.15, y: 0.73, debut: 4, duree: 7, taille: 80, periode: 0.5, hauteur: 0.05 },
+      { dessin: "dino", couleur: "#ffb14a", trajet: "saut", de: -0.15, a: 1.15, y: 0.76, debut: 11, duree: 7, taille: 50, periode: 0.4, hauteur: 0.04 },
+      { dessin: "oiseau", couleur: "#8d6e63", trajet: "traverse", de: 1.15, a: -0.15, y: 0.15, debut: 7, duree: 6, taille: 60 },
+    ],
     musique: { bpm: 132, base: 293.66, gamme: "blues", accords: [0, 0, 3, 4], melodie: "basse-synthe", densite: 0.65, basse: "basse", batterie: { k: "x...x...", t: "..x..xx.", h: "x.x.x.x." }, graine: 31 },
     fond(g, L, H) {
       g.fillStyle = degrade(g, H, ["#5a1b2e", "#e0503a", "#ffb14a"]);
