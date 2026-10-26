@@ -10,18 +10,31 @@ Application web pour enfant (téléphone ou tablette, Android ou iPhone) :
 4. **Regarder le dessin animé** : le décor colorié ondule sous l'eau, le poisson et la pieuvre découpés dans le dessin nagent, parlent et dansent.
 5. **Garder** ses dessins animés : ils restent sur l'appareil (rien n'est envoyé sur Internet).
 
-**N'importe quel dessin** (« Photo de mon dessin ») : sans page spéciale, l'application découpe le dessin sur la photo (tout ce qui n'est pas le papier, en tenant compte d'une lumière jaune ou d'une ombre), on le tourne pour qu'il regarde vers la gauche, puis il nage dans une mer dessinée par l'application.
+**N'importe quel dessin** (« Photo de mon dessin ») : sans page spéciale, l'application découpe le dessin sur la photo (tout ce qui n'est pas le papier, en tenant compte d'une lumière jaune ou d'une ombre), on le tourne pour qu'il regarde vers la gauche, puis on **choisit son film** (ou « Surprise ! ») :
+
+| Film | Le dessin… | Musique et bruitages |
+|---|---|---|
+| 🌊 Au fond de la mer | nage en ondulant | marimba, bulles |
+| 🚀 Dans l'espace | flotte en tournant, part vers les étoiles | nappes lentes, étoiles filantes, laser |
+| ☁️ Dans le ciel | vole en battant des ailes | flûte, oiseaux, vent |
+| 🌴 Dans la jungle | saute | pizzicati et tambours, « boing », oiseaux |
+| ❄️ Sur la neige | glisse sur la piste, saute un tremplin | clochettes et grelots, « whoosh » |
+| 🎉 La grande fête | danse en rythme | batterie, basse, confettis |
+| 🏰 Le château magique | apparaît et disparaît en étincelles | orgue, « pling », « tada » |
+| 🌋 Le volcan | saute pendant les éruptions | blues rapide, grondements |
 
 Bouton « Essayer sans imprimer » : film avec une page déjà coloriée.
 
-Les photos passent par un champ de fichier ouvert par une étiquette (`<label for>`), jamais par un clic de script ni l'attribut `capture` : dans certains lecteurs (page publiée sur claude.ai) ils sont bloqués, alors que le choix du téléphone (« Prendre une photo » ou « Photothèque ») reste proposé.
+Les boutons photo ouvrent directement l'appareil photo (`capture`) ; « Choisir une photo déjà prise » ouvre la photothèque. Les champs de fichier s'ouvrent par une étiquette (`<label for>`), jamais par un clic de script.
 
 ## Fichiers
 
 - `js/pages.js` : les coloriages, décrits en millimètres (sert à imprimer, à reconnaître la photo et à découper les personnages).
 - `js/photo.js` : recherche des carrés noirs, redressement de la photo, correction de la lumière.
 - `js/anim.js` : le dessin animé et les sons (fabriqués sur place).
-- `js/libre.js` : « n'importe quel dessin » (découpe sur la photo, film dans une mer dessinée).
+- `js/libre.js` : « n'importe quel dessin » (découpe sur la photo, façons de bouger, film).
+- `js/scenes.js` : les 8 films (décor, animations, musique, phrase).
+- `js/sons.js` : musiques et bruitages fabriqués sur place (instruments, batterie, effets).
 - `js/galerie.js` : dessins gardés sur l'appareil (IndexedDB).
 - `js/app.js` : les écrans.
 

@@ -1,6 +1,7 @@
 // Le dessin animé : le décor colorié ondule, les personnages découpés nagent.
 
 import { PAGE } from "./pages.js";
+import { MUSIQUE_CALME } from "./sons.js";
 
 export const DUREE = 26;
 
@@ -41,41 +42,6 @@ function decor(page, d) {
   return c;
 }
 
-// Sons fabriqués sur place (aucun fichier à télécharger).
-// À créer pendant un appui sur l'écran (sinon les téléphones refusent le son).
-export class Sons {
-  constructor() {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    this.ctx = Ctx ? new Ctx() : null;
-    this.actif = true;
-    this.prochaineNote = 0;
-  }
-  reveiller() { if (this.ctx && this.ctx.state === "suspended") this.ctx.resume(); }
-  note(freq, duree, type = "sine", volume = 0.08, glisse = 0) {
-    if (!this.ctx || !this.actif) return;
-    const t = this.ctx.currentTime;
-    const o = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, t);
-    if (glisse) o.frequency.exponentialRampToValueAtTime(freq * glisse, t + duree);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(volume, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
-    o.connect(g).connect(this.ctx.destination);
-    o.start(t);
-    o.stop(t + duree + 0.05);
-  }
-  bulle() { this.note(300 + Math.random() * 300, 0.12, "sine", 0.06, 2.5); }
-  musique(t) {
-    // Petite mélodie douce, notes de la gamme pentatonique.
-    if (t < this.prochaineNote) return;
-    this.prochaineNote = t + 0.5;
-    const gamme = [523, 587, 659, 784, 880, 1047];
-    if (Math.random() < 0.7) this.note(gamme[(Math.random() * gamme.length) | 0], 0.45, "triangle", 0.035);
-  }
-}
-
 export class Film {
   constructor(canevas, pageModele, pagePhoto, prenom, sons) {
     this.canevas = canevas;
@@ -94,7 +60,7 @@ export class Film {
     this.debut = performance.now();
     this.fin = fin;
     this.prochaineBulle = 0;
-    this.sons.prochaineNote = 0;
+    this.sons.regler(MUSIQUE_CALME);
     const boucle = (now) => {
       const t = (now - this.debut) / 1000;
       this.dessiner(t);

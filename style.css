@@ -103,3 +103,24 @@ label.gros { display: block; cursor: pointer; text-align: center; }
   font-size: 1.1rem; z-index: 11; max-width: calc(100% - 32px); text-align: center;
 }
 .message[hidden] { display: none; }
+
+label.petit { display: block; text-align: center; cursor: pointer; }
+
+.liste-films {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; width: 100%; max-width: 900px;
+}
+.film-choix {
+  border: none; border-radius: 20px; padding: 16px 10px; min-height: 120px; color: #fff; font-size: 1.15rem; font-weight: bold;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2); text-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+.film-choix:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+.film-emoji { font-size: 2.6rem; text-shadow: none; }
+.film-mer { background: linear-gradient(#3a9fd8, #1d5f9c); }
+.film-espace { background: linear-gradient(#120f3d, #2a1458); }
+.film-ciel { background: linear-gradient(#6cc4ff, #9fd8ff); }
+.film-jungle { background: linear-gradient(#55ad55, #2f7d36); }
+.film-neige { background: linear-gradient(#5b4f9a, #f1b6c9); }
+.film-fete { background: linear-gradient(#2e0f57, #c2185b); }
+.film-chateau { background: linear-gradient(#4b2a8a, #8a7fd6); }
+.film-volcan { background: linear-gradient(#e0503a, #ffb14a); }

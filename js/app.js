@@ -1,11 +1,13 @@
 import { MER, PAGES, pageEnCanevas } from "./pages.js";
 import { chargerPhoto, trouverReperes, orienter, redresser, tourner } from "./photo.js";
-import { Film, Sons } from "./anim.js";
+import { Film } from "./anim.js";
+import { Sons } from "./sons.js";
+import { SCENES } from "./scenes.js";
 import * as galerie from "./galerie.js";
 import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
 const $ = (id) => document.getElementById(id);
-const etat = { photo: null, coins: null, page: null, modele: MER, film: null, sons: null, garde: false, sprite: null };
+const etat = { photo: null, coins: null, page: null, modele: MER, film: null, sons: null, garde: false, sprite: null, scene: SCENES[0] };
 
 function lirePrenom() {
   try { return localStorage.getItem("prenom") || ""; } catch { return ""; }
@@ -88,6 +90,31 @@ async function dessinChoisi(fichier) {
 }
 
 $("libre").addEventListener("change", (e) => { dessinChoisi(e.target.files[0]); e.target.value = ""; });
+$("libre-galerie").addEventListener("change", (e) => { dessinChoisi(e.target.files[0]); e.target.value = ""; });
+
+// ---------- Choix du film ----------
+
+const listeFilms = $("liste-films");
+for (const sc of SCENES) {
+  const b = document.createElement("button");
+  b.className = `film-choix film-${sc.id}`;
+  b.dataset.action = "scene";
+  b.dataset.scene = sc.id;
+  const emoji = document.createElement("span");
+  emoji.className = "film-emoji";
+  emoji.textContent = sc.emoji;
+  const nom = document.createElement("span");
+  nom.textContent = sc.nom;
+  b.append(emoji, nom);
+  listeFilms.append(b);
+}
+
+function choisirFilm(sprite, dejaGarde) {
+  etat.page = sprite;
+  etat.garde = dejaGarde;
+  etat.modele = null;
+  montrer("choix-film");
+}
 
 function dessinerApercu() {
   const c = $("canevas-apercu"), s = etat.sprite;
@@ -183,7 +210,8 @@ function lancerFilm(page, dejaGarde) {
   const prenom = lirePrenom() || "moi";
   etat.film = etat.modele
     ? new Film($("canevas-film"), etat.modele, page, prenom, etat.sons)
-    : new FilmLibre($("canevas-film"), page, prenom, etat.sons);
+    : new FilmLibre($("canevas-film"), page, prenom, etat.sons, etat.scene);
+  $("bouton-autre").hidden = !!etat.modele;
   etat.film.jouer();
 }
 
@@ -206,8 +234,10 @@ async function afficherGalerie() {
     img.src = url;
     img.alt = "Dessin";
     img.addEventListener("click", async () => {
-      etat.modele = d.pageId === "libre" ? null : PAGES.find((p) => p.id === d.pageId) || MER;
-      lancerFilm(await galerie.enCanevas(d.image), true);
+      const image = await galerie.enCanevas(d.image);
+      if (d.pageId === "libre") return choisirFilm(image, true);
+      etat.modele = PAGES.find((p) => p.id === d.pageId) || MER;
+      lancerFilm(image, true);
     });
     const date = document.createElement("span");
     date.textContent = new Date(d.date).toLocaleDateString("fr-FR");
@@ -237,7 +267,17 @@ async function afficherGalerie() {
 const actions = {
   "tourner-libre": () => { etat.sprite = tournerSprite(etat.sprite); dessinerApercu(); },
   "miroir-libre": () => { etat.sprite = tournerSprite(etat.sprite, true); dessinerApercu(); },
-  "partir-libre": () => { etat.modele = null; lancerFilm(etat.sprite, false); },
+  "partir-libre": () => choisirFilm(etat.sprite, false),
+  scene: (b) => {
+    etat.scene = SCENES.find((s) => s.id === b.dataset.scene) || SCENES[0];
+    lancerFilm(etat.page, etat.garde);
+  },
+  surprise: () => {
+    const autres = SCENES.filter((s) => s !== etat.scene);
+    etat.scene = autres[Math.floor(Math.random() * autres.length)];
+    lancerFilm(etat.page, etat.garde);
+  },
+  "autre-film": () => choisirFilm(etat.page, etat.garde),
   accueil: () => montrer("accueil"),
   galerie: afficherGalerie,
   tourner: () => { etat.coins = tourner(etat.coins); dessinerReglage(); },
@@ -280,7 +320,7 @@ const actions = {
 
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-action]");
-  if (b && actions[b.dataset.action]) actions[b.dataset.action]();
+  if (b && actions[b.dataset.action]) actions[b.dataset.action](b);
 });
 
 window.addEventListener("resize", () => { if ($("reglage").classList.contains("actif")) dessinerReglage(); });

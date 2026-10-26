@@ -22,11 +22,14 @@
       <label class="gros bleu" for="photo">🐠 Photo de ma page « Au fond de la mer »</label>
       <button class="gros violet" data-action="galerie">🎬 Mes dessins animés</button>
       <a class="gros jaune" href="imprimer.html">🖨️ Imprimer « Au fond de la mer »</a>
+      <label class="petit" for="libre-galerie">🖼️ Choisir une photo déjà prise</label>
       <button class="petit" data-action="demo">Essayer sans imprimer</button>
     </div>
-    <!-- Des étiquettes (label) plutôt qu'un clic par script : certains navigateurs le refusent. -->
-    <input id="libre" class="fichier" type="file" accept="image/*">
-    <input id="photo" class="fichier" type="file" accept="image/*">
+    <!-- Des étiquettes (label) plutôt qu'un clic par script : certains navigateurs le refusent.
+         capture : ouvre directement l'appareil photo du téléphone. -->
+    <input id="libre" class="fichier" type="file" accept="image/*" capture="environment">
+    <input id="libre-galerie" class="fichier" type="file" accept="image/*">
+    <input id="photo" class="fichier" type="file" accept="image/*" capture="environment">
   </section>
 
   <section id="reglage" class="ecran">
@@ -50,12 +53,22 @@
     </div>
   </section>
 
+  <section id="choix-film" class="ecran">
+    <h2>Quel film ?</h2>
+    <div id="liste-films" class="liste-films"></div>
+    <div class="boutons ligne">
+      <button class="petit" data-action="accueil">Accueil</button>
+      <button class="gros jaune" data-action="surprise">🎲 Surprise !</button>
+    </div>
+  </section>
+
   <section id="film" class="ecran">
     <div class="cadre-film"><canvas id="canevas-film"></canvas></div>
     <div class="boutons ligne">
       <button class="petit" data-action="accueil">Accueil</button>
       <button class="petit" data-action="son" id="bouton-son">🔊 Son</button>
       <button class="gros vert" data-action="rejouer">↺ Encore !</button>
+      <button class="gros bleu" data-action="autre-film" id="bouton-autre">🎬 Autre film</button>
       <button class="gros violet" data-action="garder" id="bouton-garder">⭐ Garder</button>
     </div>
   </section>
