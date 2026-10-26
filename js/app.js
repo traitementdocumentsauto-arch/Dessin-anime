@@ -5,6 +5,7 @@ import { Sons } from "./sons.js";
 import { SCENES } from "./scenes.js";
 import { SUJETS, couleursDuDessin, repliques } from "./paroles.js";
 import { Voix } from "./voix.js";
+import { CORPS_PLATS } from "./acteur3d.js";
 import * as galerie from "./galerie.js";
 import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
@@ -247,6 +248,7 @@ function lancerFilm(page, dejaGarde) {
     ? new Film($("canevas-film"), etat.modele, page, prenom, etat.sons)
     : new FilmLibre($("canevas-film"), page, prenom, etat.sons, etat.scene, {
       voix: etat.voix || (etat.voix = new Voix()),
+      corps: CORPS_PLATS.has(etat.infos.sujet) ? "plat" : "profil",
       repliques: repliques({
         sujet: SUJETS.find((x) => x.id === etat.infos.sujet), nom: etat.infos.nom, phrasePerso: etat.infos.phrase,
         couleurs: etat.couleurs, scene: etat.scene, prenom,

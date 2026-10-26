@@ -1,6 +1,8 @@
 // « N'importe quel dessin » : on découpe le dessin sur la photo (tout ce qui n'est pas
 // du papier), puis il nage dans une mer dessinée par l'application.
 
+import { Acteur3D } from "./acteur3d.js";
+
 const limiter = (v, a, b) => Math.max(a, Math.min(b, v));
 const etape = (t, a, b) => limiter((t - a) / (b - a), 0, 1);
 const doux = (x) => (x < 0.5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2);
@@ -338,7 +340,8 @@ function fenetre(t, a, b, c, d) {
 export class FilmLibre {
   // Le dessin regarde vers la gauche (on le règle avant avec « Tourner » et « Retourner »).
   // repliques : [{ t, duree, texte }] (voir paroles.js) ; voix : synthèse vocale (voix.js).
-  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null } = {}) {
+  // corps : « plat » (vu de dessus) ou « profil » pour le dessin en 3D (voir acteur3d.js).
+  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null, corps = "profil" } = {}) {
     this.canevas = canevas;
     this.ctx = canevas.getContext("2d");
     this.L = canevas.width = 1280;
@@ -349,6 +352,7 @@ export class FilmLibre {
     this.scene = scene;
     this.repliques = repliques || [{ t: 15.6, duree: 2.2, texte: scene.phrase.replace("{p}", this.prenom) }];
     this.voix = voix;
+    this.acteur = new Acteur3D(sprite, this.L, this.H, corps);
     this.r = Math.random;
     this.etat = {};
     this.signaux = {};
@@ -399,6 +403,7 @@ export class FilmLibre {
   arreter() {
     cancelAnimationFrame(this.raf);
     if (this.voix) this.voix.taire();
+    this.acteur.liberer();
   }
 
   // Dessin déformé (maillage de triangles) dans un tampon, puis posé sur la scène avec son ombre.
@@ -430,6 +435,17 @@ export class FilmLibre {
     const c = this.ctx;
     const [lw, lh] = this.taillePx(p.taille);
     if (lw < 2) return;
+    if (this.acteur.ok) {
+      // En 3D : les déformations du mouvement s'ajoutent (à moitié) à celles du corps.
+      const def = DEFORMATIONS[p.deforme];
+      const deforme = def ? (u, v) => { const [dx, dy] = def(u, v, t, p); return [dx * 0.5, dy * 0.5]; } : () => [0, 0];
+      const image = this.acteur.rendre(t, p, lh / this.H, deforme, parle);
+      c.save();
+      c.globalAlpha = Math.max(0, Math.min(1, p.alpha ?? 1));
+      c.drawImage(image, 0, 0);
+      c.restore();
+      return;
+    }
     // Quand il parle, il sautille un peu.
     const voix = parle ? 1 + 0.035 * Math.abs(Math.sin(t * 13)) : 1;
     const tp = this.maillage(t, p, lw, lh);
