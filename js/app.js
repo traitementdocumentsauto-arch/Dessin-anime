@@ -3,11 +3,14 @@ import { chargerPhoto, trouverReperes, orienter, redresser, tourner } from "./ph
 import { Film } from "./anim.js";
 import { Sons } from "./sons.js";
 import { SCENES } from "./scenes.js";
+import { SUJETS, couleursDuDessin, repliques } from "./paroles.js";
+import { Voix } from "./voix.js";
 import * as galerie from "./galerie.js";
 import { decouperDessin, tournerSprite, FilmLibre } from "./libre.js";
 
 const $ = (id) => document.getElementById(id);
-const etat = { photo: null, coins: null, page: null, modele: MER, film: null, sons: null, garde: false, sprite: null, scene: SCENES[0] };
+const etat = { photo: null, coins: null, page: null, modele: MER, film: null, sons: null, garde: false, sprite: null, scene: SCENES[0],
+  infos: { sujet: null, nom: "", phrase: "" }, couleurs: null, voix: null };
 
 function lirePrenom() {
   try { return localStorage.getItem("prenom") || ""; } catch { return ""; }
@@ -80,6 +83,7 @@ async function dessinChoisi(fichier) {
     if (!sprite) { message("Je ne vois pas de dessin sur cette photo. Essaie avec la feuille bien à plat !"); return; }
     // Une photo en hauteur d'un dessin en largeur : on le met d'emblée en largeur.
     etat.sprite = sprite.height > sprite.width * 1.15 ? tournerSprite(sprite) : sprite;
+    reglerInfos({ sujet: null, nom: "", phrase: "" });
     montrer("apercu");
     dessinerApercu();
   } catch {
@@ -109,7 +113,37 @@ for (const sc of SCENES) {
   listeFilms.append(b);
 }
 
+// ---------- Ce que c'est (pour ses paroles) ----------
+
+const listeSujets = $("sujets");
+for (const sj of SUJETS) {
+  const b = document.createElement("button");
+  b.className = "sujet";
+  b.dataset.action = "sujet";
+  b.dataset.sujet = sj.id;
+  b.setAttribute("aria-pressed", "false");
+  const emoji = document.createElement("span");
+  emoji.textContent = sj.emoji;
+  const nom = document.createElement("span");
+  nom.textContent = sj.nom.replace(/^(le |la |l')/, "").replace("ton dessin", "autre");
+  b.append(emoji, nom);
+  listeSujets.append(b);
+}
+
+function reglerInfos(infos) {
+  etat.infos = { sujet: infos.sujet || null, nom: infos.nom || "", phrase: infos.phrase || "" };
+  const sj = SUJETS.find((x) => x.id === etat.infos.sujet);
+  listeSujets.querySelectorAll(".sujet").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sujet === etat.infos.sujet)));
+  $("nom-dessin").value = etat.infos.nom;
+  $("nom-dessin").placeholder = sj ? sj.nom : "la raie tachetée, Bubulle…";
+  $("phrase-dessin").value = etat.infos.phrase;
+}
+
+$("nom-dessin").addEventListener("input", () => { etat.infos.nom = $("nom-dessin").value; });
+$("phrase-dessin").addEventListener("input", () => { etat.infos.phrase = $("phrase-dessin").value; });
+
 function choisirFilm(sprite, dejaGarde) {
+  if (sprite !== etat.page || !etat.couleurs) etat.couleurs = couleursDuDessin(sprite);
   etat.page = sprite;
   etat.garde = dejaGarde;
   etat.modele = null;
@@ -210,7 +244,14 @@ function lancerFilm(page, dejaGarde) {
   const prenom = lirePrenom() || "moi";
   etat.film = etat.modele
     ? new Film($("canevas-film"), etat.modele, page, prenom, etat.sons)
-    : new FilmLibre($("canevas-film"), page, prenom, etat.sons, etat.scene);
+    : new FilmLibre($("canevas-film"), page, prenom, etat.sons, etat.scene, {
+      voix: etat.voix || (etat.voix = new Voix()),
+      repliques: repliques({
+        sujet: SUJETS.find((x) => x.id === etat.infos.sujet), nom: etat.infos.nom, phrasePerso: etat.infos.phrase,
+        couleurs: etat.couleurs, scene: etat.scene, prenom,
+      }),
+    });
+  if (etat.voix) etat.voix.actif = etat.sons.actif;
   $("bouton-autre").hidden = !!etat.modele;
   etat.film.jouer();
 }
@@ -235,7 +276,7 @@ async function afficherGalerie() {
     img.alt = "Dessin";
     img.addEventListener("click", async () => {
       const image = await galerie.enCanevas(d.image);
-      if (d.pageId === "libre") return choisirFilm(image, true);
+      if (d.pageId === "libre") { reglerInfos(d.infos || {}); etat.couleurs = null; return choisirFilm(image, true); }
       etat.modele = PAGES.find((p) => p.id === d.pageId) || MER;
       lancerFilm(image, true);
     });
@@ -268,6 +309,10 @@ const actions = {
   "tourner-libre": () => { etat.sprite = tournerSprite(etat.sprite); dessinerApercu(); },
   "miroir-libre": () => { etat.sprite = tournerSprite(etat.sprite, true); dessinerApercu(); },
   "partir-libre": () => choisirFilm(etat.sprite, false),
+  sujet: (b) => {
+    const meme = etat.infos.sujet === b.dataset.sujet;
+    reglerInfos({ ...etat.infos, sujet: meme ? null : b.dataset.sujet });
+  },
   scene: (b) => {
     etat.scene = SCENES.find((s) => s.id === b.dataset.scene) || SCENES[0];
     lancerFilm(etat.page, etat.garde);
@@ -304,11 +349,12 @@ const actions = {
   son: () => {
     if (!etat.sons) etat.sons = new Sons();
     etat.sons.actif = !etat.sons.actif;
+    if (etat.voix) { etat.voix.actif = etat.sons.actif; if (!etat.voix.actif) etat.voix.taire(); }
     majBoutonSon();
   },
   garder: async () => {
     try {
-      await galerie.garder({ pageId: etat.modele ? etat.modele.id : "libre", prenom: lirePrenom(), canevas: etat.page });
+      await galerie.garder({ pageId: etat.modele ? etat.modele.id : "libre", prenom: lirePrenom(), canevas: etat.page, infos: etat.modele ? null : etat.infos });
       etat.garde = true;
       $("bouton-garder").hidden = true;
       message("Gardé dans « Mes dessins animés » !");

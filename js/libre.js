@@ -182,7 +182,7 @@ export const DUREE_LIBRE = 22;
 const MOUVEMENTS = {
   nage(t) {
     const o = (a) => 0.04 * Math.sin(t * 1.6 + a);
-    const base = { onde: true, rot: 0.05 * Math.sin(t * 1.3) };
+    const base = { deforme: "onde", rot: 0.05 * Math.sin(t * 1.3) };
     if (t < 9) return { ...base, x: entre(1.35, -0.35, etape(t, 3, 9)), y: 0.48 + o(0), taille: 1, sens: -1 };
     if (t < 13.5) return { ...base, x: entre(-0.25, 1.25, etape(t, 9, 13.5)), y: 0.3 + o(1), taille: 0.55, sens: 1 };
     if (t < 15.5) return { ...base, x: entre(1.5, 0.5, doux(etape(t, 13.5, 15.5))), y: 0.52 + o(2), taille: 1.3, sens: -1 };
@@ -191,7 +191,7 @@ const MOUVEMENTS = {
   },
 
   vol(t) {
-    const ailes = { sy: 1 + 0.1 * Math.sin(t * 9), sx: 1 - 0.03 * Math.sin(t * 9) };
+    const ailes = { deforme: "ailes", sy: 1 + 0.04 * Math.sin(t * 9) };
     if (t < 8.5) return { ...ailes, x: entre(1.3, -0.3, etape(t, 3, 8.5)), y: 0.35 + 0.08 * Math.sin(t * 2), taille: 0.9, sens: -1, rot: 0.1 * Math.cos(t * 2) };
     if (t < 13) return { ...ailes, x: entre(-0.3, 1.3, etape(t, 8.5, 13)), y: 0.62 + 0.05 * Math.sin(t * 2.5), taille: 0.55, sens: 1 };
     if (t < 15.5) { const e = doux(etape(t, 13, 15.5)); return { ...ailes, x: entre(1.4, 0.5, e), y: entre(0.2, 0.45, e), taille: 1.2, sens: -1 }; }
@@ -200,7 +200,9 @@ const MOUVEMENTS = {
     return { ...ailes, x: entre(0.5, -0.5, doux(e)), y: entre(0.45, 0.1, e), taille: 1.2, sens: -1, rot: 0.2 * e };
   },
 
-  flotte(t, f) {
+  flotte(t, f) { return { deforme: "gelee", ...MOUVEMENTS.flotteBrut(t, f) }; },
+
+  flotteBrut(t, f) {
     if (t < 9) { const e = doux(etape(t, 3, 9)); return { x: entre(1.3, 0.3, e), y: entre(0.25, 0.6, e), taille: 0.85, sens: -1, rot: (t - 3) * 0.5 }; }
     if (t < 13) { const e = doux(etape(t, 9, 13)); return { x: entre(0.3, 0.75, e), y: entre(0.6, 0.3, e) + 0.05 * Math.sin(t * 2), taille: 0.7 + 0.15 * Math.sin(t * 1.5), sens: 1, rot: (t - 3) * 0.5 }; }
     if (t < 15.5) { const e = doux(etape(t, 13, 15.5)); return { x: entre(0.75, 0.5, e), y: entre(0.3, 0.5, e), taille: entre(0.7 + 0.15 * Math.sin(13 * 1.5), 1.25, e), sens: -1, rot: entre(5, 2 * Math.PI, e) }; }
@@ -210,23 +212,27 @@ const MOUVEMENTS = {
     return { x: entre(0.5, 0.86, e), y: entre(0.5, 0.18, e), taille: entre(1.25, 0.02, e), sens: -1, rot: e * 6 };
   },
 
-  saut(t, f) {
+  saut(t, f) { return { deforme: "saut", ...MOUVEMENTS.sautBrut(t, f) }; },
+
+  sautBrut(t, f) {
     const bond = (t0, periode, hauteur, nom) => {
       const n = Math.floor((t - t0) / periode), ph = ((t - t0) / periode) % 1;
       f.signal(nom, n, "boing");
       const ecrase = ph < 0.12 ? 1 - (0.12 - ph) * 1.3 : 1;
-      return { dy: -hauteur * Math.sin(Math.PI * ph), sy: ecrase, sx: 2 - ecrase };
+      return { dy: -hauteur * Math.sin(Math.PI * ph), sy: ecrase, sx: 2 - ecrase, ph };
     };
     const sol = (taille, ligne = 0.86) => ligne - f.hauteurRel(taille) / 2;
-    if (t < 10) { const b = bond(3, 0.7, 0.2, "s1"); return { x: entre(1.3, -0.3, etape(t, 3, 10)), y: sol(0.9) + b.dy, sx: b.sx, sy: b.sy, taille: 0.9, sens: -1 }; }
-    if (t < 13.5) { const b = bond(10, 0.5, 0.1, "s2"); return { x: entre(-0.3, 1.3, etape(t, 10, 13.5)), y: sol(0.5, 0.72) + b.dy, sx: b.sx, sy: b.sy, taille: 0.5, sens: 1 }; }
-    if (t < 15.5) { const b = bond(13.5, 0.7, 0.18, "s3"); return { x: entre(1.3, 0.5, etape(t, 13.5, 15.5)), y: sol(1.2) + b.dy, sx: b.sx, sy: b.sy, taille: 1.2, sens: -1 }; }
-    if (t < 17.8) { const b = bond(15.5, 0.55, 0.12, "s4"); return { x: 0.5, y: sol(1.2) + b.dy, sx: b.sx, sy: b.sy, taille: 1.2, sens: -1 }; }
+    if (t < 10) { const b = bond(3, 0.7, 0.2, "s1"); return { x: entre(1.3, -0.3, etape(t, 3, 10)), y: sol(0.9) + b.dy, sx: b.sx, sy: b.sy, ph: b.ph, taille: 0.9, sens: -1 }; }
+    if (t < 13.5) { const b = bond(10, 0.5, 0.1, "s2"); return { x: entre(-0.3, 1.3, etape(t, 10, 13.5)), y: sol(0.5, 0.72) + b.dy, sx: b.sx, sy: b.sy, ph: b.ph, taille: 0.5, sens: 1 }; }
+    if (t < 15.5) { const b = bond(13.5, 0.7, 0.18, "s3"); return { x: entre(1.3, 0.5, etape(t, 13.5, 15.5)), y: sol(1.2) + b.dy, sx: b.sx, sy: b.sy, ph: b.ph, taille: 1.2, sens: -1 }; }
+    if (t < 17.8) { const b = bond(15.5, 0.55, 0.12, "s4"); return { x: 0.5, y: sol(1.2) + b.dy, sx: b.sx, sy: b.sy, ph: b.ph, taille: 1.2, sens: -1 }; }
     const b = bond(17.8, 0.6, 0.2, "s5");
-    return { x: entre(0.5, -0.5, etape(t, 17.8, 19.6)), y: sol(1.2) + b.dy, sx: b.sx, sy: b.sy, taille: 1.2, sens: -1 };
+    return { x: entre(0.5, -0.5, etape(t, 17.8, 19.6)), y: sol(1.2) + b.dy, sx: b.sx, sy: b.sy, ph: b.ph, taille: 1.2, sens: -1 };
   },
 
-  glisse(t, f) {
+  glisse(t, f) { return { deforme: "penche", ...MOUVEMENTS.glisseBrut(t, f) }; },
+
+  glisseBrut(t, f) {
     // Même piste que le décor « Sur la neige » : y = 0,40 + 0,38 x.
     const pente = Math.atan2(0.38 * f.H, f.L);
     const sur = (x, taille, saut = 0) => ({ x, y: 0.4 + 0.38 * x - (f.hauteurRel(taille) / 2) * Math.cos(pente) - saut, rot: pente, taille, sens: 1 });
@@ -252,12 +258,14 @@ const MOUVEMENTS = {
     if (t > 18.3) { f.signal("saut-final", 1, "tada"); y = entre(y, -0.8, etape(t, 18.3, 19.6)); }
     return {
       x: 0.5 + 0.28 * Math.sin((TAU * (t - 3)) / 7) * calme, y,
-      taille: 1 + 0.06 * rebond, sens: Math.floor(b / 2) % 2 ? 1 : -1,
+      taille: 1 + 0.06 * rebond, sens: Math.floor(b / 2) % 2 ? 1 : -1, deforme: "danse", b,
       rot: 0.18 * Math.sin(Math.PI * b), sx: 1 + 0.05 * (1 - rebond), sy: 1 - 0.05 * (1 - rebond),
     };
   },
 
-  magie(t, f) {
+  magie(t, f) { return { deforme: "magie", ...MOUVEMENTS.magieBrut(t, f) }; },
+
+  magieBrut(t, f) {
     const points = [[0.25, 0.55], [0.72, 0.35], [0.45, 0.62], [0.28, 0.3], [0.75, 0.6], [0.5, 0.4]];
     if (t < 13) {
       const u = Math.max(0, t - 3) / 1.6, k = Math.floor(u), ph = u % 1;
@@ -279,6 +287,49 @@ const MOUVEMENTS = {
 };
 
 const TAU = Math.PI * 2;
+
+// Déformations du dessin : décalage (en fraction de sa largeur, de sa hauteur) de chaque
+// point (u, v) du dessin, u = 0 à la tête (à gauche), v = 0 en haut.
+const DEFORMATIONS = {
+  // Vague de la tête vers la queue.
+  onde: (u, v, t) => [0, Math.sin(u * Math.PI * 1.6 - t * 5) * 0.06 * (0.3 + u)],
+  // Le haut et le bas se replient puis s'ouvrent : battements d'ailes.
+  ailes: (u, v, t) => { const c = (v - 0.5) * 2; return [0, -c * Math.abs(c) * 0.16 * Math.sin(t * 9 - u * 1.5)]; },
+  // Tremblote doucement comme une gelée.
+  gelee: (u, v, t) => [0.025 * Math.sin(t * 3 + v * 5), 0.025 * Math.sin(t * 2.6 + u * 5)],
+  // Le haut suit le saut avec un peu de retard.
+  saut: (u, v, t, p) => [(1 - v) ** 1.5 * 0.1 * Math.sin((p.ph || 0) * TAU), 0.02 * Math.sin(u * 6 - t * 8)],
+  // Se penche en avant et en arrière en glissant.
+  penche: (u, v, t) => [(0.5 - v) * 0.12 * Math.sin(t * 3), 0.02 * Math.sin(u * 6 - t * 6)],
+  // Se dandine en rythme.
+  danse: (u, v, t, p) => [(0.5 - v) * 0.18 * Math.sin(Math.PI * (p.b || 0)), 0.03 * Math.sin(u * TAU + t * 4)],
+  // Ondule comme un tour de magie.
+  magie: (u, v, t) => [0.04 * Math.sin(t * 4 + v * 6), 0.03 * Math.sin(t * 3 + u * 6)],
+};
+
+// Dessine un triangle de l'image source (s) sur le triangle (d) de destination.
+function triangle(g, img, s0, s1, s2, d0, d1, d2, boite) {
+  const den = (s1[0] - s0[0]) * (s2[1] - s0[1]) - (s2[0] - s0[0]) * (s1[1] - s0[1]);
+  if (!den) return;
+  const a = ((d1[0] - d0[0]) * (s2[1] - s0[1]) - (d2[0] - d0[0]) * (s1[1] - s0[1])) / den;
+  const b = ((d1[1] - d0[1]) * (s2[1] - s0[1]) - (d2[1] - d0[1]) * (s1[1] - s0[1])) / den;
+  const c = ((d2[0] - d0[0]) * (s1[0] - s0[0]) - (d1[0] - d0[0]) * (s2[0] - s0[0])) / den;
+  const d = ((d2[1] - d0[1]) * (s1[0] - s0[0]) - (d1[1] - d0[1]) * (s2[0] - s0[0])) / den;
+  const e = d0[0] - a * s0[0] - c * s0[1], f = d0[1] - b * s0[0] - d * s0[1];
+  // Triangle un peu agrandi pour ne pas voir les jointures.
+  const mx = (d0[0] + d1[0] + d2[0]) / 3, my = (d0[1] + d1[1] + d2[1]) / 3;
+  const grand = (p) => { const dx = p[0] - mx, dy = p[1] - my, n = Math.hypot(dx, dy) || 1; return [p[0] + dx / n, p[1] + dy / n]; };
+  g.save();
+  g.beginPath();
+  for (const p of [d0, d1, d2].map(grand)) g.lineTo(p[0], p[1]);
+  g.closePath();
+  g.clip();
+  g.transform(a, b, c, d, e, f);
+  const [bx, by, bl, bh] = boite;
+  g.drawImage(img, bx, by, bl, bh, bx, by, bl, bh);
+  g.restore();
+}
+
 // 0 avant a, monte de a à b, 1 jusqu'à c, redescend de c à d.
 function fenetre(t, a, b, c, d) {
   return t < a || t > d ? 0 : t < b ? (t - a) / (b - a) : t > c ? 1 - (t - c) / (d - c) : 1;
@@ -286,7 +337,8 @@ function fenetre(t, a, b, c, d) {
 
 export class FilmLibre {
   // Le dessin regarde vers la gauche (on le règle avant avec « Tourner » et « Retourner »).
-  constructor(canevas, sprite, prenom, sons, scene) {
+  // repliques : [{ t, duree, texte }] (voir paroles.js) ; voix : synthèse vocale (voix.js).
+  constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null } = {}) {
     this.canevas = canevas;
     this.ctx = canevas.getContext("2d");
     this.L = canevas.width = 1280;
@@ -295,6 +347,8 @@ export class FilmLibre {
     this.prenom = prenom || "moi";
     this.sons = sons;
     this.scene = scene;
+    this.repliques = repliques || [{ t: 15.6, duree: 2.2, texte: scene.phrase.replace("{p}", this.prenom) }];
+    this.voix = voix;
     this.r = Math.random;
     this.etat = {};
     this.signaux = {};
@@ -328,6 +382,11 @@ export class FilmLibre {
   jouer(fin) {
     this.debut = performance.now();
     this.sons.regler(this.scene.musique);
+    if (this.voix) {
+      // Appelé pendant l'appui sur le bouton : les téléphones acceptent alors la voix.
+      this.voix.taire();
+      this.voix.dire(`Le dessin animé de ${this.prenom}. ${this.scene.nom} !`, { aigu: false });
+    }
     const boucle = (now) => {
       const t = (now - this.debut) / 1000;
       this.dessiner(t);
@@ -337,51 +396,80 @@ export class FilmLibre {
     this.raf = requestAnimationFrame(boucle);
   }
 
-  arreter() { cancelAnimationFrame(this.raf); }
+  arreter() {
+    cancelAnimationFrame(this.raf);
+    if (this.voix) this.voix.taire();
+  }
 
-  dessinerPersonnage(t, p) {
-    const c = this.ctx, s = this.sprite;
+  // Dessin déformé (maillage de triangles) dans un tampon, puis posé sur la scène avec son ombre.
+  maillage(t, p, lw, lh) {
+    const img = this.sprite, NX = 10, NY = 8, marge = 0.25;
+    const W = Math.ceil(lw * (1 + 2 * marge)), H = Math.ceil(lh * (1 + 2 * marge));
+    if (!this.tampon) this.tampon = document.createElement("canvas");
+    const tp = this.tampon;
+    if (tp.width !== W || tp.height !== H) { tp.width = W; tp.height = H; }
+    const g = tp.getContext("2d");
+    g.clearRect(0, 0, W, H);
+    const deforme = DEFORMATIONS[p.deforme] || (() => [0, 0]);
+    const pts = [];
+    for (let j = 0; j <= NY; j++) for (let i = 0; i <= NX; i++) {
+      const u = i / NX, v = j / NY, [dx, dy] = deforme(u, v, t, p);
+      pts.push({ d: [W / 2 + (u - 0.5 + dx) * lw, H / 2 + (v - 0.5 + dy) * lh], s: [u * img.width, v * img.height] });
+    }
+    const cw = img.width / NX, ch = img.height / NY;
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const a = pts[j * (NX + 1) + i], b = pts[j * (NX + 1) + i + 1], c = pts[(j + 1) * (NX + 1) + i + 1], d = pts[(j + 1) * (NX + 1) + i];
+      const boite = [Math.max(0, i * cw - 2), Math.max(0, j * ch - 2), Math.min(img.width - Math.max(0, i * cw - 2), cw + 4), Math.min(img.height - Math.max(0, j * ch - 2), ch + 4)];
+      triangle(g, img, a.s, b.s, c.s, a.d, b.d, c.d, boite);
+      triangle(g, img, a.s, c.s, d.s, a.d, c.d, d.d, boite);
+    }
+    return tp;
+  }
+
+  dessinerPersonnage(t, p, parle) {
+    const c = this.ctx;
     const [lw, lh] = this.taillePx(p.taille);
     if (lw < 2) return;
+    // Quand il parle, il sautille un peu.
+    const voix = parle ? 1 + 0.035 * Math.abs(Math.sin(t * 13)) : 1;
+    const tp = this.maillage(t, p, lw, lh);
     c.save();
     c.globalAlpha = Math.max(0, Math.min(1, p.alpha ?? 1));
     c.translate(p.x * this.L, p.y * this.H);
     c.rotate(p.rot || 0);
-    c.scale(-p.sens * (p.sx || 1), p.sy || 1); // le dessin regarde à gauche : retourné pour aller à droite
+    c.scale(-p.sens * (p.sx || 1) * voix, (p.sy || 1) * voix); // le dessin regarde à gauche : retourné pour aller à droite
     c.shadowColor = "rgba(0,0,0,0.3)";
     c.shadowBlur = 22;
     c.shadowOffsetY = 12;
-    if (p.onde) {
-      // Vague de la tête (à gauche) vers la queue : le dessin nage.
-      const bandes = 48;
-      for (let i = 0; i < bandes; i++) {
-        const u = i / bandes, v = Math.sin(u * Math.PI * 1.6 - t * 5);
-        const dy = v * lh * 0.05 * (0.3 + u), etire = 1 + 0.06 * v;
-        c.drawImage(s, u * s.width, 0, s.width / bandes + 1, s.height, -lw / 2 + u * lw, (-lh / 2) * etire + dy, lw / bandes + 1, lh * etire);
-      }
-    } else {
-      c.drawImage(s, -lw / 2, -lh / 2, lw, lh);
-    }
+    c.drawImage(tp, -tp.width / 2, -tp.height / 2);
     c.restore();
   }
 
   parole(texte, x, yHaut) {
     const c = this.ctx;
     c.save();
-    c.font = "bold 46px 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif";
-    const l = c.measureText(texte).width + 50;
-    const bx = limiter(x * this.L - l / 2, 10, this.L - l - 10), by = limiter(yHaut * this.H - 100, 10, this.H - 90);
+    c.font = "bold 44px 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif";
+    // Coupe en lignes de 900 px au plus.
+    const lignes = [];
+    // Espace insécable devant « ! ? : » : jamais seuls en début de ligne.
+    for (const mot of texte.replace(/ ([!?:;»])/g, "\u00a0$1").split(" ")) {
+      const essai = lignes.length ? lignes[lignes.length - 1] + " " + mot : mot;
+      if (lignes.length && c.measureText(essai).width <= 900) lignes[lignes.length - 1] = essai;
+      else lignes.push(mot);
+    }
+    const l = Math.max(...lignes.map((m) => c.measureText(m).width)) + 54, h = lignes.length * 54 + 26;
+    const bx = limiter(x * this.L - l / 2, 10, this.L - l - 10), by = limiter(yHaut * this.H - h - 24, 10, this.H - h - 10);
     c.fillStyle = "#fff";
     c.strokeStyle = "#222";
     c.lineWidth = 4;
     c.beginPath();
-    c.roundRect(bx, by, l, 78, 39);
+    c.roundRect(bx, by, l, h, 36);
     c.fill();
     c.stroke();
     c.fillStyle = "#222";
     c.textAlign = "center";
     c.textBaseline = "middle";
-    c.fillText(texte, bx + l / 2, by + 41);
+    lignes.forEach((m, i) => c.fillText(m, bx + l / 2, by + 13 + 27 + i * 54));
     c.restore();
   }
 
@@ -407,11 +495,11 @@ export class FilmLibre {
     c.drawImage(this.fond, 0, 0);
     this.pos = MOUVEMENTS[sc.mouvement](t, this);
     if (sc.derriere) sc.derriere(c, t, this);
-    if (t > 2.5) this.dessinerPersonnage(t, this.pos);
+    const replique = this.repliques.find((r) => t >= r.t && t < r.t + r.duree);
+    if (t > 2.5) this.dessinerPersonnage(t, this.pos, !!replique);
     if (sc.devant) sc.devant(c, t, this);
-    if (t > 15.6 && t < 17.8) {
-      this.parole(sc.phrase.replace("{p}", this.prenom), this.pos.x, this.pos.y - this.hauteurRel(this.pos.taille) / 2);
-    }
+    this.repliques.forEach((r, k) => { if (t >= r.t) this.signal("replique" + k, 1, null, () => this.voix && this.voix.dire(r.texte)); });
+    if (replique) this.parole(replique.texte, this.pos.x, this.pos.y - this.hauteurRel(this.pos.taille) / 2);
     if (t < 3.5) this.carton([["Le dessin animé de", 58], [this.prenom, 100], [`${sc.emoji} ${sc.nom}`, 52]], t < 2.5 ? 1 : 1 - (t - 2.5));
     if (t > 19.6) this.carton([["Fin", 140], [`Un film de ${this.prenom}`, 56]], Math.min(1, (t - 19.6) * 1.5));
   }

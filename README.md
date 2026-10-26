@@ -23,6 +23,10 @@ Application web pour enfant (téléphone ou tablette, Android ou iPhone) :
 | 🏰 Le château magique | apparaît et disparaît en étincelles | orgue, « pling », « tada » |
 | 🌋 Le volcan | saute pendant les éruptions | blues rapide, grondements |
 
+Le dessin est **déformé** pendant le film (maillage de triangles) : il ondule en nageant, bat des ailes en volant, tremblote en flottant, se tasse en retombant, se penche en glissant, se dandine en dansant, et sautille quand il parle.
+
+**Ses paroles** : avant le film, on dit ce qu'est le dessin (poisson, raie, dinosaure, fusée…), on peut lui donner un nom (« la raie tachetée ») et une phrase à dire. Il se présente, parle de ses couleurs (repérées sur le dessin : « Je suis toute bleue avec un peu de vert ! »), dit une phrase propre à ce qu'il est, une phrase du film, puis au revoir. Les répliques s'affichent dans des bulles et sont dites **à voix haute** par la voix du téléphone (synthèse vocale de l'appareil, rien n'est envoyé sur Internet) ; le bouton Son coupe aussi la voix.
+
 Bouton « Essayer sans imprimer » : film avec une page déjà coloriée.
 
 Les boutons photo ouvrent directement l'appareil photo (`capture`) ; « Choisir une photo déjà prise » ouvre la photothèque. Les champs de fichier s'ouvrent par une étiquette (`<label for>`), jamais par un clic de script.
@@ -34,6 +38,8 @@ Les boutons photo ouvrent directement l'appareil photo (`capture`) ; « Choisir 
 - `js/anim.js` : le dessin animé et les sons (fabriqués sur place).
 - `js/libre.js` : « n'importe quel dessin » (découpe sur la photo, façons de bouger, film).
 - `js/scenes.js` : les 8 films (décor, animations, musique, phrase).
+- `js/paroles.js` : sujets du dessin, couleurs repérées, répliques du film.
+- `js/voix.js` : voix du téléphone.
 - `js/sons.js` : musiques et bruitages fabriqués sur place (instruments, batterie, effets).
 - `js/galerie.js` : dessins gardés sur l'appareil (IndexedDB).
 - `js/app.js` : les écrans.

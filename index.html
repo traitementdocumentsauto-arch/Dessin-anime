@@ -44,11 +44,23 @@
 
   <section id="apercu" class="ecran">
     <p class="consigne">Ton dessin doit regarder vers la gauche ⬅️</p>
-    <div class="cadre-reglage"><canvas id="canevas-apercu"></canvas></div>
+    <div class="cadre-apercu"><canvas id="canevas-apercu"></canvas></div>
     <div class="boutons ligne">
-      <button class="petit" data-action="accueil">Retour</button>
       <button class="petit" data-action="tourner-libre">↺ Tourner</button>
       <button class="petit" data-action="miroir-libre">⇋ Retourner</button>
+    </div>
+    <p class="consigne">C'est quoi, ton dessin ?</p>
+    <div id="sujets" class="sujets"></div>
+    <div class="champs">
+      <label class="champ">Son nom
+        <input id="nom-dessin" type="text" maxlength="40" autocomplete="off">
+      </label>
+      <label class="champ">Ce qu'il dit (si tu veux)
+        <input id="phrase-dessin" type="text" maxlength="80" autocomplete="off" placeholder="J'adore les crêpes !">
+      </label>
+    </div>
+    <div class="boutons ligne">
+      <button class="petit" data-action="accueil">Retour</button>
       <button class="gros vert" data-action="partir-libre">C'est parti !</button>
     </div>
   </section>

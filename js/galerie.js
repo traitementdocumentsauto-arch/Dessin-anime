@@ -22,11 +22,11 @@ async function operation(mode, action) {
   });
 }
 
-export async function garder({ pageId, prenom, canevas }) {
+export async function garder({ pageId, prenom, canevas, infos = null }) {
   // PNG pour un personnage découpé (fond transparent), JPEG pour une page entière.
   const format = pageId === "libre" ? "image/png" : "image/jpeg";
   const image = await new Promise((r) => canevas.toBlob(r, format, 0.88));
-  return operation("readwrite", (t) => t.add({ pageId, prenom, image, date: Date.now() }));
+  return operation("readwrite", (t) => t.add({ pageId, prenom, image, infos, date: Date.now() }));
 }
 
 export function lister() {
