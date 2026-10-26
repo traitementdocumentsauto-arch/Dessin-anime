@@ -37,11 +37,12 @@ function message(texte) {
   minuteurMessage = setTimeout(() => { m.hidden = true; }, 4000);
 }
 
-// Le son ne peut démarrer qu'après un appui sur l'écran.
-document.addEventListener("pointerdown", () => {
+// Le son ne peut démarrer qu'après un appui sur l'écran (sur iPhone : quand le doigt se lève).
+function deverrouillerSon() {
   if (!etat.sons) etat.sons = new Sons();
   etat.sons.reveiller();
-}, { capture: true });
+}
+for (const ev of ["pointerdown", "touchend", "click", "keydown"]) document.addEventListener(ev, deverrouillerSon, { capture: true });
 
 // ---------- Photo ----------
 
@@ -252,6 +253,12 @@ function lancerFilm(page, dejaGarde) {
       }),
     });
   if (etat.voix) etat.voix.actif = etat.sons.actif;
+  // Son toujours bloqué une seconde après : on le dit, avec quoi faire.
+  setTimeout(() => {
+    if (etat.sons && etat.sons.actif && !etat.sons.enMarche && $("film").classList.contains("actif")) {
+      message("Pas de son ? Monte le volume. Sur iPhone, enlève le mode silencieux.");
+    }
+  }, 1200);
   $("bouton-autre").hidden = !!etat.modele;
   etat.film.jouer();
 }

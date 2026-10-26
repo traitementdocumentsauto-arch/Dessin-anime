@@ -47,7 +47,27 @@ export class Sons {
     for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
   }
 
-  reveiller() { if (this.ctx && this.ctx.state === "suspended") this.ctx.resume(); }
+  // À appeler à chaque appui : débloque le son (sur iPhone, seulement quand le doigt se lève).
+  reveiller() {
+    // iPhone : jouer même quand le mode silencieux est activé (Safari 17 et plus).
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch { /* non pris en charge */ }
+    if (!this.ctx) return;
+    if (this.ctx.state !== "running") this.ctx.resume().catch(() => {});
+    if (this.debloque) return;
+    this.debloque = true;
+    // Un son vide, joué pendant l'appui, finit de débloquer le son sur les anciens iPhone.
+    const vide = this.ctx.createBufferSource();
+    vide.buffer = this.ctx.createBuffer(1, 1, 22050);
+    vide.connect(this.ctx.destination);
+    vide.start(0);
+    try {
+      const a = new Audio("data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA");
+      a.play().catch(() => {});
+    } catch { /* pas d'élément audio */ }
+  }
+
+  // Vrai quand le navigateur laisse vraiment sortir le son.
+  get enMarche() { return !!this.ctx && this.ctx.state === "running"; }
 
   // Choisit la musique du film et la remet au début.
   regler(config) {
