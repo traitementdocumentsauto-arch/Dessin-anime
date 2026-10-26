@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f7fc4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Mon dessin animé</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icone.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <section id="accueil" class="ecran actif">
+    <h1>Mon dessin animé</h1>
+    <label class="prenom">Mon prénom
+      <input id="prenom" type="text" maxlength="20" autocomplete="off" placeholder="Ton prénom">
+    </label>
+    <div class="boutons">
+      <label class="gros vert" for="libre">📷 Photo de mon dessin</label>
+      <label class="gros bleu" for="photo">🐠 Photo de ma page « Au fond de la mer »</label>
+      <button class="gros violet" data-action="galerie">🎬 Mes dessins animés</button>
+      <a class="gros jaune" href="imprimer.html">🖨️ Imprimer « Au fond de la mer »</a>
+      <button class="petit" data-action="demo">Essayer sans imprimer</button>
+    </div>
+    <!-- Des étiquettes (label) plutôt qu'un clic par script : certains navigateurs le refusent. -->
+    <input id="libre" class="fichier" type="file" accept="image/*">
+    <input id="photo" class="fichier" type="file" accept="image/*">
+  </section>
+
+  <section id="reglage" class="ecran">
+    <p id="consigne-reglage" class="consigne"></p>
+    <div class="cadre-reglage"><canvas id="canevas-reglage"></canvas></div>
+    <div class="boutons ligne">
+      <button class="petit" data-action="accueil">Retour</button>
+      <button class="petit" data-action="tourner">↻ Tourner</button>
+      <button class="gros vert" data-action="partir">C'est parti !</button>
+    </div>
+  </section>
+
+  <section id="apercu" class="ecran">
+    <p class="consigne">Ton dessin doit regarder vers la gauche ⬅️</p>
+    <div class="cadre-reglage"><canvas id="canevas-apercu"></canvas></div>
+    <div class="boutons ligne">
+      <button class="petit" data-action="accueil">Retour</button>
+      <button class="petit" data-action="tourner-libre">↺ Tourner</button>
+      <button class="petit" data-action="miroir-libre">⇋ Retourner</button>
+      <button class="gros vert" data-action="partir-libre">C'est parti !</button>
+    </div>
+  </section>
+
+  <section id="film" class="ecran">
+    <div class="cadre-film"><canvas id="canevas-film"></canvas></div>
+    <div class="boutons ligne">
+      <button class="petit" data-action="accueil">Accueil</button>
+      <button class="petit" data-action="son" id="bouton-son">🔊 Son</button>
+      <button class="gros vert" data-action="rejouer">↺ Encore !</button>
+      <button class="gros violet" data-action="garder" id="bouton-garder">⭐ Garder</button>
+    </div>
+  </section>
+
+  <section id="galerie" class="ecran">
+    <h2>Mes dessins animés</h2>
+    <p id="galerie-vide" class="consigne" hidden>Pas encore de dessin animé. Colorie une page et prends-la en photo !</p>
+    <div id="liste-galerie" class="liste-galerie"></div>
+    <div class="boutons ligne">
+      <button class="petit" data-action="accueil">Retour</button>
+    </div>
+  </section>
+
+  <div id="attente" class="attente" hidden>Je regarde ton dessin…</div>
+  <div id="message" class="message" role="status" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
