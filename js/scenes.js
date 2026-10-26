@@ -129,7 +129,7 @@ export const SCENES = [
       c.globalCompositeOperation = "lighter";
       for (let i = 0; i < 4; i++) {
         const x = L * (0.1 + i * 0.27) + Math.sin(t * 0.5 + i) * 50;
-        c.fillStyle = degrade(c, H, ["rgba(255,255,220,0.2)", "rgba(255,255,220,0)"]);
+        c.fillStyle = f.etat.rayon || (f.etat.rayon = degrade(c, H, ["rgba(255,255,220,0.2)", "rgba(255,255,220,0)"]));
         c.beginPath(); c.moveTo(x - 35, 0); c.lineTo(x + 35, 0); c.lineTo(x + 160, H); c.lineTo(x - 30, H); c.fill();
       }
       c.restore();
@@ -419,16 +419,21 @@ export const SCENES = [
     },
     init(f) {
       f.etat.lucioles = Array.from({ length: 25 }, () => ({ x: f.r(), y: 0.3 + f.r() * 0.6, p: f.r() * 6 }));
+      const h = document.createElement("canvas");
+      h.width = h.height = 28;
+      const g = h.getContext("2d"), d = g.createRadialGradient(14, 14, 0, 14, 14, 14);
+      d.addColorStop(0, "rgba(255,250,170,1)"); d.addColorStop(1, "rgba(255,250,170,0)");
+      g.fillStyle = d; g.fillRect(0, 0, 28, 28);
+      f.etat.halo = h;
       f.etat.eclats = [];
     },
     derriere(c, t, f) {
       for (const l of f.etat.lucioles) {
         const x = (l.x + 0.03 * Math.sin(t * 0.7 + l.p)) * f.L, y = (l.y + 0.03 * Math.cos(t * 0.9 + l.p)) * f.H;
-        const a = 0.4 + 0.6 * Math.abs(Math.sin(t * 2 + l.p));
-        const d = c.createRadialGradient(x, y, 0, x, y, 14);
-        d.addColorStop(0, `rgba(255,250,170,${a})`); d.addColorStop(1, "rgba(255,250,170,0)");
-        c.fillStyle = d; c.beginPath(); c.arc(x, y, 14, 0, TAU); c.fill();
+        c.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(t * 2 + l.p));
+        c.drawImage(f.etat.halo, x - 14, y - 14);
       }
+      c.globalAlpha = 1;
     },
     devant(c, t, f) {
       const p = f.pos;

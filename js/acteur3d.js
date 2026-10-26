@@ -11,19 +11,20 @@ import * as THREE from "./vendor/three.module.min.js";
 const FOV = 35, DISTANCE = 10;
 
 export class Acteur3D {
-  constructor(sprite, L, H, corps = "profil") {
+  // q : qualité (1 = 1280 × 720 pixels réels).
+  constructor(sprite, L, H, corps = "profil", q = 1) {
     this.ok = false;
     this.corps = corps;
     this.canvas = document.createElement("canvas");
-    this.canvas.width = L;
-    this.canvas.height = H;
+    this.L = L;
+    this.H = H;
     try {
-      this.rendu = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+      this.rendu = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
     } catch {
       return; // pas de WebGL : le film garde le dessin en 2D
     }
     this.rendu.setPixelRatio(1);
-    this.rendu.setSize(L, H, false);
+    this.rendu.setSize(Math.round(L * q), Math.round(H * q), false);
     this.rendu.setClearColor(0x000000, 0);
 
     this.scene = new THREE.Scene();
@@ -44,7 +45,7 @@ export class Acteur3D {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 4;
     this.aspect = sprite.width / sprite.height;
-    this.geo = new THREE.PlaneGeometry(this.aspect, 1, 48, 32);
+    this.geo = new THREE.PlaneGeometry(this.aspect, 1, 36, 24);
     this.base = Float32Array.from(this.geo.attributes.position.array);
     const matiere = new THREE.MeshLambertMaterial({ map: texture, side: THREE.DoubleSide, alphaTest: 0.45, transparent: false });
     this.maille = new THREE.Mesh(this.geo, matiere);
@@ -54,9 +55,16 @@ export class Acteur3D {
     this.ok = true;
   }
 
+  qualite(q) {
+    if (this.ok) this.rendu.setSize(Math.round(this.L * q), Math.round(this.H * q), false);
+  }
+
   // p : place du dessin (voir MOUVEMENTS dans libre.js) ; hauteur : sa hauteur en fraction de l'écran ;
   // deforme(u, v) : décalage 2D du mouvement en cours ; parle : il sautille un peu.
+  // Renvoie null quand le dessin est passé derrière l'écran (gros plan).
   rendre(t, p, hauteur, deforme, parle) {
+    const z = p.z || 0;
+    if (z > 8.8) return null;
     const pos = this.geo.attributes.position.array, b = this.base, a = this.aspect;
     const plat = this.corps === "plat";
     for (let i = 0; i < pos.length; i += 3) {
@@ -81,7 +89,7 @@ export class Acteur3D {
     const voix = parle ? 1 + 0.035 * Math.abs(Math.sin(t * 13)) : 1;
     const s = hauteur * this.visH;
     const g = this.groupe;
-    g.position.set((p.x - 0.5) * this.visL, (0.5 - p.y) * this.visH, 0);
+    g.position.set((p.x - 0.5) * this.visL, (0.5 - p.y) * this.visH, z);
     // Le dessin regarde à gauche : retourné (échelle négative) pour aller à droite.
     g.scale.set(-p.sens * (p.sx || 1) * voix * s, (p.sy || 1) * voix * s, s);
     // Vu un peu de dessus pour un corps plat ; léger balancement en profondeur sinon.

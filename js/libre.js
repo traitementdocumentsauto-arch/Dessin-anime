@@ -181,22 +181,32 @@ export const DUREE_LIBRE = 22;
 // Façons de bouger : chaque fonction donne, au temps t, la place du dessin
 // (x, y en fraction de l'écran), sa taille, son sens (-1 = vers la gauche) et ses effets.
 // Le dessin est au centre entre 15,5 et 17,8 s : c'est là qu'il parle.
+// Vient vers l'écran : part de loin (z = -6) et passe tout contre l'écran (z = 9,2),
+// de plus en plus vite comme une vraie nage vers la caméra.
+function grosPlan(t, a, b, x0, x1, y0, y1, f) {
+  const e = etape(t, a, b);
+  if (e > 0.82) f.signal("gros-plan", a, "whoosh");
+  return { x: entre(x0, x1, e), y: entre(y0, y1, e), z: entre(-6, 9.2, e ** 1.6) };
+}
+
 const MOUVEMENTS = {
-  nage(t) {
+  nage(t, f) {
     const o = (a) => 0.04 * Math.sin(t * 1.6 + a);
     const base = { deforme: "onde", rot: 0.05 * Math.sin(t * 1.3) };
-    if (t < 9) return { ...base, x: entre(1.35, -0.35, etape(t, 3, 9)), y: 0.48 + o(0), taille: 1, sens: -1 };
-    if (t < 13.5) return { ...base, x: entre(-0.25, 1.25, etape(t, 9, 13.5)), y: 0.3 + o(1), taille: 0.55, sens: 1 };
-    if (t < 15.5) return { ...base, x: entre(1.5, 0.5, doux(etape(t, 13.5, 15.5))), y: 0.52 + o(2), taille: 1.3, sens: -1 };
-    if (t < 17.8) return { ...base, x: 0.5 + 0.02 * Math.sin((t - 15.5) * 3), y: 0.52 + o(2), taille: 1.3, sens: -1 };
+    if (t < 8.5) return { ...base, x: entre(1.35, -0.35, etape(t, 3, 8.5)), y: 0.48 + o(0), taille: 1, sens: -1 };
+    if (t < 12) return { ...base, x: entre(-0.25, 1.25, etape(t, 8.5, 12)), y: 0.3 + o(1), taille: 0.55, sens: 1 };
+    if (t < 15) return { ...base, ...grosPlan(t, 12, 15, 0.62, 0.4, 0.42, 0.56, f), taille: 1, sens: -1 };
+    if (t < 16.2) return { ...base, x: entre(1.5, 0.5, doux(etape(t, 15, 16.2))), y: 0.52 + o(2), taille: 1.3, sens: -1 };
+    if (t < 17.8) return { ...base, x: 0.5 + 0.02 * Math.sin((t - 16.2) * 3), y: 0.52 + o(2), taille: 1.3, sens: -1 };
     return { ...base, x: entre(0.5, -0.6, doux(etape(t, 17.8, 19.6))), y: 0.52 + o(2), taille: 1.3, sens: -1 };
   },
 
-  vol(t) {
+  vol(t, f) {
     const ailes = { deforme: "ailes", sy: 1 + 0.04 * Math.sin(t * 9) };
     if (t < 8.5) return { ...ailes, x: entre(1.3, -0.3, etape(t, 3, 8.5)), y: 0.35 + 0.08 * Math.sin(t * 2), taille: 0.9, sens: -1, rot: 0.1 * Math.cos(t * 2) };
-    if (t < 13) return { ...ailes, x: entre(-0.3, 1.3, etape(t, 8.5, 13)), y: 0.62 + 0.05 * Math.sin(t * 2.5), taille: 0.55, sens: 1 };
-    if (t < 15.5) { const e = doux(etape(t, 13, 15.5)); return { ...ailes, x: entre(1.4, 0.5, e), y: entre(0.2, 0.45, e), taille: 1.2, sens: -1 }; }
+    if (t < 12) return { ...ailes, x: entre(-0.3, 1.3, etape(t, 8.5, 12)), y: 0.62 + 0.05 * Math.sin(t * 2.5), taille: 0.55, sens: 1 };
+    if (t < 15) return { ...ailes, ...grosPlan(t, 12, 15, 0.6, 0.42, 0.38, 0.5, f), taille: 0.9, sens: -1 };
+    if (t < 15.5) { const e = doux(etape(t, 15, 15.5)); return { ...ailes, x: entre(1.4, 0.5, e), y: entre(0.2, 0.45, e), taille: 1.2, sens: -1 }; }
     if (t < 17.8) return { ...ailes, x: 0.5 + 0.03 * Math.sin(t * 1.5), y: 0.45 + 0.04 * Math.sin(t * 2.2), taille: 1.2, sens: -1, rot: 0.06 * Math.sin(t * 2) };
     const e = etape(t, 17.8, 19.6);
     return { ...ailes, x: entre(0.5, -0.5, doux(e)), y: entre(0.45, 0.1, e), taille: 1.2, sens: -1, rot: 0.2 * e };
@@ -206,8 +216,9 @@ const MOUVEMENTS = {
 
   flotteBrut(t, f) {
     if (t < 9) { const e = doux(etape(t, 3, 9)); return { x: entre(1.3, 0.3, e), y: entre(0.25, 0.6, e), taille: 0.85, sens: -1, rot: (t - 3) * 0.5 }; }
-    if (t < 13) { const e = doux(etape(t, 9, 13)); return { x: entre(0.3, 0.75, e), y: entre(0.6, 0.3, e) + 0.05 * Math.sin(t * 2), taille: 0.7 + 0.15 * Math.sin(t * 1.5), sens: 1, rot: (t - 3) * 0.5 }; }
-    if (t < 15.5) { const e = doux(etape(t, 13, 15.5)); return { x: entre(0.75, 0.5, e), y: entre(0.3, 0.5, e), taille: entre(0.7 + 0.15 * Math.sin(13 * 1.5), 1.25, e), sens: -1, rot: entre(5, 2 * Math.PI, e) }; }
+    if (t < 12) { const e = doux(etape(t, 9, 12)); return { x: entre(0.3, 0.75, e), y: entre(0.6, 0.3, e) + 0.05 * Math.sin(t * 2), taille: 0.7 + 0.15 * Math.sin(t * 1.5), sens: 1, rot: (t - 3) * 0.5 }; }
+    if (t < 15) return { ...grosPlan(t, 12, 15, 0.7, 0.45, 0.32, 0.5, f), taille: 0.85, sens: -1, rot: (t - 3) * 0.5 };
+    if (t < 15.5) { const e = doux(etape(t, 15, 15.5)); return { x: 0.5, y: entre(-0.4, 0.5, e), taille: 1.25, sens: -1, rot: 0.1 * Math.sin(t * 1.5) }; }
     if (t < 17.8) return { x: 0.5, y: 0.5 + 0.03 * Math.sin(t * 1.6), taille: 1.25, sens: -1, rot: 0.1 * Math.sin(t * 1.5) };
     f.signal("depart", 1, "zap");
     const e = etape(t, 17.8, 19.6);
@@ -257,8 +268,11 @@ const MOUVEMENTS = {
     const calme = 1 - 0.85 * fenetre(t, 15, 15.5, 17.8, 18.3);
     let y = 0.6 - 0.1 * rebond;
     if (t < 4.5) { y = entre(-0.6, 0.6, doux(etape(t, 3, 4.5))); if (t > 4.3) f.signal("arrivee", 1, "boing"); }
-    if (t > 18.3) { f.signal("saut-final", 1, "tada"); y = entre(y, -0.8, etape(t, 18.3, 19.6)); }
+    // Pour finir, il saute vers l'écran.
+    const z = t > 18.3 ? entre(0, 9.2, etape(t, 18.3, 19.5) ** 1.5) : 0;
+    if (t > 18.3) f.signal("saut-final", 1, "tada");
     return {
+      z,
       x: 0.5 + 0.28 * Math.sin((TAU * (t - 3)) / 7) * calme, y,
       taille: 1 + 0.06 * rebond, sens: Math.floor(b / 2) % 2 ? 1 : -1, deforme: "danse", b,
       rot: 0.18 * Math.sin(Math.PI * b), sx: 1 + 0.05 * (1 - rebond), sy: 1 - 0.05 * (1 - rebond),
@@ -344,15 +358,20 @@ export class FilmLibre {
   constructor(canevas, sprite, prenom, sons, scene, { repliques = null, voix = null, corps = "profil" } = {}) {
     this.canevas = canevas;
     this.ctx = canevas.getContext("2d");
-    this.L = canevas.width = 1280;
-    this.H = canevas.height = 720;
+    // Taille logique 1280 × 720 ; le canevas réel est plus petit sur téléphone (qualité q),
+    // et encore réduit si le téléphone n'arrive pas à suivre.
+    this.L = 1280;
+    this.H = 720;
+    this.q = window.matchMedia && matchMedia("(pointer: coarse)").matches ? 0.75 : 1;
+    canevas.width = Math.round(this.L * this.q);
+    canevas.height = Math.round(this.H * this.q);
     this.sprite = sprite;
     this.prenom = prenom || "moi";
     this.sons = sons;
     this.scene = scene;
     this.repliques = repliques || [{ t: 15.6, duree: 2.2, texte: scene.phrase.replace("{p}", this.prenom) }];
     this.voix = voix;
-    this.acteur = new Acteur3D(sprite, this.L, this.H, corps);
+    this.acteur = new Acteur3D(sprite, this.L, this.H, corps, this.q);
     this.r = Math.random;
     this.etat = {};
     this.signaux = {};
@@ -391,13 +410,37 @@ export class FilmLibre {
       this.voix.taire();
       this.voix.dire(`Le dessin animé de ${this.prenom}. ${this.scene.nom} !`, { aigu: false });
     }
+    let avant = 0, moyenne = 16, controle = 2;
     const boucle = (now) => {
       const t = (now - this.debut) / 1000;
+      if (avant) moyenne = moyenne * 0.92 + (now - avant) * 0.08;
+      avant = now;
+      // Moins de 38 images par seconde : on dessine plus petit.
+      if (t > controle) {
+        controle = t + 1.2;
+        if (moyenne > 26 && this.q > 0.5) this.reglerQualite(Math.max(0.5, this.q - 0.15));
+      }
       this.dessiner(t);
       if (t < DUREE_LIBRE) this.raf = requestAnimationFrame(boucle);
       else if (fin) fin();
     };
     this.raf = requestAnimationFrame(boucle);
+  }
+
+  reglerQualite(q) {
+    this.q = q;
+    this.canevas.width = Math.round(this.L * q);
+    this.canevas.height = Math.round(this.H * q);
+    this.acteur.qualite(q);
+  }
+
+  // Place à l'écran d'un dessin qui vient vers la caméra (z) : plus gros et écarté du centre.
+  projeter(p) {
+    const z = p.z || 0;
+    if (!z) return p;
+    if (z > 8.8) return { ...p, cache: true };
+    const k = 10 / (10 - z);
+    return { ...p, x: 0.5 + (p.x - 0.5) * k, y: 0.5 + (p.y - 0.5) * k, taille: p.taille * k };
   }
 
   arreter() {
@@ -433,19 +476,23 @@ export class FilmLibre {
 
   dessinerPersonnage(t, p, parle) {
     const c = this.ctx;
-    const [lw, lh] = this.taillePx(p.taille);
-    if (lw < 2) return;
     if (this.acteur.ok) {
+      const [, lh] = this.taillePx(p.taille);
       // En 3D : les déformations du mouvement s'ajoutent (à moitié) à celles du corps.
       const def = DEFORMATIONS[p.deforme];
       const deforme = def ? (u, v) => { const [dx, dy] = def(u, v, t, p); return [dx * 0.5, dy * 0.5]; } : () => [0, 0];
       const image = this.acteur.rendre(t, p, lh / this.H, deforme, parle);
+      if (!image) return;
       c.save();
       c.globalAlpha = Math.max(0, Math.min(1, p.alpha ?? 1));
-      c.drawImage(image, 0, 0);
+      c.drawImage(image, 0, 0, this.L, this.H);
       c.restore();
       return;
     }
+    p = this.projeter(p);
+    if (p.cache) return;
+    const [lw, lh] = this.taillePx(p.taille);
+    if (lw < 2) return;
     // Quand il parle, il sautille un peu.
     const voix = parle ? 1 + 0.035 * Math.abs(Math.sin(t * 13)) : 1;
     const tp = this.maillage(t, p, lw, lh);
@@ -507,6 +554,7 @@ export class FilmLibre {
 
   dessiner(t) {
     const c = this.ctx, sc = this.scene;
+    c.setTransform(this.q, 0, 0, this.q, 0, 0);
     this.sons.avancer(t);
     c.drawImage(this.fond, 0, 0);
     this.pos = MOUVEMENTS[sc.mouvement](t, this);
@@ -515,7 +563,10 @@ export class FilmLibre {
     if (t > 2.5) this.dessinerPersonnage(t, this.pos, !!replique);
     if (sc.devant) sc.devant(c, t, this);
     this.repliques.forEach((r, k) => { if (t >= r.t) this.signal("replique" + k, 1, null, () => this.voix && this.voix.dire(r.texte)); });
-    if (replique) this.parole(replique.texte, this.pos.x, this.pos.y - this.hauteurRel(this.pos.taille) / 2);
+    if (replique) {
+      const e = this.projeter(this.pos);
+      if (!e.cache) this.parole(replique.texte, e.x, e.y - this.hauteurRel(e.taille) / 2);
+    }
     if (t < 3.5) this.carton([["Le dessin animé de", 58], [this.prenom, 100], [`${sc.emoji} ${sc.nom}`, 52]], t < 2.5 ? 1 : 1 - (t - 2.5));
     if (t > 19.6) this.carton([["Fin", 140], [`Un film de ${this.prenom}`, 56]], Math.min(1, (t - 19.6) * 1.5));
   }

@@ -23,7 +23,7 @@ Application web pour enfant (téléphone ou tablette, Android ou iPhone) :
 | 🏰 Le château magique | apparaît et disparaît en étincelles | orgue, « pling », « tada » |
 | 🌋 Le volcan | saute pendant les éruptions | blues rapide, grondements |
 
-Le dessin est animé **en 3D** (three.js, copié dans `js/vendor/`, licence MIT) : le dessin découpé devient une feuille souple et éclairée. Un dessin vu de dessus (raie, tortue, papillon) est vu un peu en plongée, et ses deux côtés ondulent ensemble comme des ailes. Un dessin vu de profil se courbe de gauche à droite, la queue plus que la tête. Sans WebGL, le dessin reste **déformé** en 2D (maillage de triangles) : il ondule en nageant, bat des ailes en volant, tremblote en flottant, se tasse en retombant, se penche en glissant, se dandine en dansant, et sautille quand il parle.
+Le dessin est animé **en 3D** (three.js, copié dans `js/vendor/`, licence MIT) : le dessin découpé devient une feuille souple et éclairée. Un dessin vu de dessus (raie, tortue, papillon) est vu un peu en plongée, et ses deux côtés ondulent ensemble comme des ailes. Un dessin vu de profil se courbe de gauche à droite, la queue plus que la tête. Dans les films de la mer, du ciel et de l'espace, le dessin **vient vers l'écran** et passe tout contre (gros plan) ; à la fin de la fête, il saute vers l'écran. Sans WebGL, le dessin reste **déformé** en 2D (maillage de triangles) : il ondule en nageant, bat des ailes en volant, tremblote en flottant, se tasse en retombant, se penche en glissant, se dandine en dansant, et sautille quand il parle.
 
 **Ses paroles** : avant le film, on dit ce qu'est le dessin (poisson, raie, dinosaure, fusée…), on peut lui donner un nom (« la raie tachetée ») et une phrase à dire. Il se présente, parle de ses couleurs (repérées sur le dessin : « Je suis toute bleue avec un peu de vert ! »), dit une phrase propre à ce qu'il est, une phrase du film, puis au revoir. Les répliques s'affichent dans des bulles et sont dites **à voix haute** par la voix du téléphone (synthèse vocale de l'appareil, rien n'est envoyé sur Internet) ; le bouton Son coupe aussi la voix.
 
@@ -58,3 +58,7 @@ Puis ouvrir http://localhost:8000. Le site est publié par GitHub Pages depuis l
 ## Ajouter un coloriage
 
 Dans `js/pages.js`, copier `MER` : un décor (cadre du haut) et des personnages (un cadre chacun), avec pour chaque personnage sa **silhouette** (contour extérieur, sert de pochoir) et ses **détails** (yeux, traits). Garder les 4 carrés noirs et la bande vide en bas de page.
+
+## Fluidité
+
+Le film est pensé en 1280 × 720, mais dessiné à 75 % de cette taille sur téléphone ; si l'appareil passe sous 38 images par seconde, la taille baisse encore (jusqu'à 50 %). Les effets lourds (dégradés, halos) sont préparés une seule fois.
